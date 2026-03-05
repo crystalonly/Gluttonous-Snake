@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+
+.snake_best_score
+.snake_records.json

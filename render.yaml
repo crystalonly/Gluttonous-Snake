@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: snake-web
+    env: python
+    plan: free
+    buildCommand: echo "No build step"
+    startCommand: python3 web_snake/server.py
+    healthCheckPath: /healthz
+    autoDeploy: true

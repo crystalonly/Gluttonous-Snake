@@ -17,20 +17,33 @@ class SnakeGame(QWidget):
     def __init__(self) -> None:
         super().__init__()
 
-        self.window_width = 980
-        self.window_height = 660
-        self.cell_size = 24
+        self.base_window_width = 980
+        self.base_window_height = 660
+        self.base_cell_size = 24
         self.grid_cols = 28
         self.grid_rows = 24
 
-        self.board_x = 26
-        self.board_y = 42
+        self.base_board_x = 26
+        self.base_board_y = 42
+        self.base_panel_gap = 28
+        self.base_panel_width = 228
+        self.base_right_margin = 26
+        self.base_bottom_margin = 28
+
+        self.display_scales = [85, 95, 100, 110, 120, 130, 140]
+        self.display_scale = 100
+
+        self.window_width = self.base_window_width
+        self.window_height = self.base_window_height
+        self.cell_size = self.base_cell_size
+        self.board_x = self.base_board_x
+        self.board_y = self.base_board_y
         self.board_width = self.grid_cols * self.cell_size
         self.board_height = self.grid_rows * self.cell_size
-        self.panel_x = self.board_x + self.board_width + 28
-        self.panel_y = 42
-        self.panel_width = self.window_width - self.panel_x - 26
-        self.panel_height = self.window_height - self.panel_y - 28
+        self.panel_x = self.board_x + self.board_width + self.base_panel_gap
+        self.panel_y = self.base_board_y
+        self.panel_width = self.window_width - self.panel_x - self.base_right_margin
+        self.panel_height = self.window_height - self.panel_y - self.base_bottom_margin
 
         self.languages = ["en", "zh", "ja"]
         self.difficulty_levels = ["easy", "mixed", "hard"]
@@ -72,9 +85,11 @@ class SnakeGame(QWidget):
                 "snake_shape": "Snake Shape",
                 "food_style": "Food Style",
                 "speed_level": "Speed",
+                "display_scale": "Display Size",
+                "scale_level": "Scale",
                 "mouse_hint": "Mouse: click board or arrows to steer",
                 "keys_hint": "Keys: WASD/Arrows, Space, R, O, Y/N, +/-",
-                "settings_hint": "Setting Keys: L/D/M/C/H/F and +/-",
+                "settings_hint": "Setting Keys: L/D/M/C/H/F/V and +/-",
                 "ready_title": "Ready?",
                 "ready_subtitle": "Press Enter / Space / Arrow or Click Start",
                 "paused_title": "Paused",
@@ -135,9 +150,11 @@ class SnakeGame(QWidget):
                 "snake_shape": "蛇身形状",
                 "food_style": "豆子样式",
                 "speed_level": "速度",
+                "display_scale": "画面大小",
+                "scale_level": "缩放",
                 "mouse_hint": "鼠标: 点击棋盘或方向按钮控制",
                 "keys_hint": "键盘: WASD/方向键, 空格, R, O, Y/N, +/-",
-                "settings_hint": "设置快捷键: L/D/M/C/H/F 及 +/-",
+                "settings_hint": "设置快捷键: L/D/M/C/H/F/V 及 +/-",
                 "ready_title": "准备开始?",
                 "ready_subtitle": "按 Enter/空格/方向键 或点击开始",
                 "paused_title": "已暂停",
@@ -198,9 +215,11 @@ class SnakeGame(QWidget):
                 "snake_shape": "ヘビの形",
                 "food_style": "エサスタイル",
                 "speed_level": "速度",
+                "display_scale": "画面サイズ",
+                "scale_level": "拡大率",
                 "mouse_hint": "マウス: 盤面/矢印ボタンで操作",
                 "keys_hint": "キー: WASD/矢印, Space, R, O, Y/N, +/-",
-                "settings_hint": "設定キー: L/D/M/C/H/F と +/-",
+                "settings_hint": "設定キー: L/D/M/C/H/F/V と +/-",
                 "ready_title": "準備OK?",
                 "ready_subtitle": "Enter/Space/矢印 または 開始をクリック",
                 "paused_title": "一時停止中",
@@ -279,6 +298,7 @@ class SnakeGame(QWidget):
             "length": 4,
             "duration_sec": 0.0,
             "speed_level": self.speed_level,
+            "display_scale": self.display_scale,
             "difficulty": self.difficulty,
             "play_mode": self.play_mode,
             "language": self.language,
@@ -289,8 +309,8 @@ class SnakeGame(QWidget):
         self.click_regions: dict[str, QRectF] = {}
 
         self._load_records()
+        self._apply_display_scale()
         self.setWindowTitle(self._t("window_title"))
-        self.setFixedSize(self.window_width, self.window_height)
         self.setFocusPolicy(Qt.StrongFocus)
 
         self.reset()
@@ -317,6 +337,34 @@ class SnakeGame(QWidget):
         except (TypeError, ValueError):
             return default
 
+    def _apply_display_scale(self) -> None:
+        ratio = max(0.75, min(1.60, self.display_scale / 100.0))
+        self.cell_size = max(18, int(round(self.base_cell_size * ratio)))
+
+        self.board_x = self.base_board_x
+        self.board_y = self.base_board_y
+        self.board_width = self.grid_cols * self.cell_size
+        self.board_height = self.grid_rows * self.cell_size
+
+        content_width = (
+            self.board_x
+            + self.board_width
+            + self.base_panel_gap
+            + self.base_panel_width
+            + self.base_right_margin
+        )
+        content_height = self.board_y + self.board_height + self.base_bottom_margin
+
+        self.window_width = max(self.base_window_width, content_width)
+        self.window_height = max(self.base_window_height, content_height)
+
+        self.panel_x = self.board_x + self.board_width + self.base_panel_gap
+        self.panel_y = self.base_board_y
+        self.panel_width = self.window_width - self.panel_x - self.base_right_margin
+        self.panel_height = self.window_height - self.panel_y - self.base_bottom_margin
+
+        self.setFixedSize(self.window_width, self.window_height)
+
     def _normalize_record(self, raw: dict[str, object]) -> dict[str, object]:
         return {
             "timestamp": str(raw.get("timestamp", "")),
@@ -325,6 +373,7 @@ class SnakeGame(QWidget):
             "length": max(1, self._as_int(raw.get("length", 4))),
             "duration_sec": max(0.0, self._as_float(raw.get("duration_sec", 0.0))),
             "speed_level": min(9, max(1, self._as_int(raw.get("speed_level", self.speed_level)))),
+            "display_scale": min(160, max(75, self._as_int(raw.get("display_scale", self.display_scale)))),
             "difficulty": str(raw.get("difficulty", self.difficulty)),
             "play_mode": str(raw.get("play_mode", self.play_mode)),
             "language": str(raw.get("language", self.language)),
@@ -348,6 +397,10 @@ class SnakeGame(QWidget):
 
             loaded_speed = self._as_int(settings.get("speed_level", self.speed_level))
             self.speed_level = min(9, max(1, loaded_speed))
+
+            loaded_scale = self._as_int(settings.get("display_scale", self.display_scale))
+            if loaded_scale in self.display_scales:
+                self.display_scale = loaded_scale
 
             loaded_difficulty = str(settings.get("difficulty", self.difficulty))
             if loaded_difficulty in self.difficulty_levels:
@@ -471,7 +524,7 @@ class SnakeGame(QWidget):
 
     def _save_records(self) -> None:
         payload = {
-            "version": 5,
+            "version": 6,
             "stats": {
                 "best_score": self.best_score,
                 "best_length": self.best_length,
@@ -485,6 +538,7 @@ class SnakeGame(QWidget):
             "settings": {
                 "language": self.language,
                 "speed_level": self.speed_level,
+                "display_scale": self.display_scale,
                 "difficulty": self.difficulty,
                 "play_mode": self.play_mode,
                 "snake_color_style": self.snake_color_style,
@@ -533,6 +587,15 @@ class SnakeGame(QWidget):
     def _cycle_play_mode(self, delta: int = 1) -> None:
         self._cycle_option("play_mode", self.play_modes, delta)
         self.revive_prompt = False
+        self._save_records()
+
+    def _cycle_display_scale(self, delta: int = 1) -> None:
+        try:
+            index = self.display_scales.index(self.display_scale)
+        except ValueError:
+            index = self.display_scales.index(100)
+        self.display_scale = self.display_scales[(index + delta) % len(self.display_scales)]
+        self._apply_display_scale()
         self._save_records()
 
     def _cycle_snake_color(self, delta: int = 1) -> None:
@@ -710,6 +773,7 @@ class SnakeGame(QWidget):
             "length": current_length,
             "duration_sec": self.last_duration_sec,
             "speed_level": self.speed_level,
+            "display_scale": self.display_scale,
             "difficulty": self.difficulty,
             "play_mode": self.play_mode,
             "language": self.language,
@@ -1003,6 +1067,9 @@ class SnakeGame(QWidget):
             if key == Qt.Key_F:
                 self._cycle_food_style()
                 return
+            if key == Qt.Key_V:
+                self._cycle_display_scale()
+                return
             if key in {Qt.Key_Minus, Qt.Key_BracketLeft}:
                 self._change_speed(-1)
                 return
@@ -1106,6 +1173,12 @@ class SnakeGame(QWidget):
             return
         if action == "settings_mode_next":
             self._cycle_play_mode(1)
+            return
+        if action == "settings_scale_prev":
+            self._cycle_display_scale(-1)
+            return
+        if action == "settings_scale_next":
+            self._cycle_display_scale(1)
             return
         if action == "settings_color_prev":
             self._cycle_snake_color(-1)
@@ -1397,17 +1470,23 @@ class SnakeGame(QWidget):
         base_y = self.board_y + head_y * self.cell_size
         painter.setBrush(QColor("#052933"))
 
+        front = self.cell_size * 0.67
+        back = self.cell_size * 0.33
+        side_low = self.cell_size * 0.30
+        side_high = self.cell_size * 0.63
+        eye_size = max(3.0, self.cell_size * 0.16)
+
         if self.direction == (1, 0):
-            eyes = [(16, 7), (16, 15)]
+            eyes = [(front, side_low), (front, side_high)]
         elif self.direction == (-1, 0):
-            eyes = [(8, 7), (8, 15)]
+            eyes = [(back, side_low), (back, side_high)]
         elif self.direction == (0, -1):
-            eyes = [(7, 8), (15, 8)]
+            eyes = [(side_low, back), (side_high, back)]
         else:
-            eyes = [(7, 16), (15, 16)]
+            eyes = [(side_low, front), (side_high, front)]
 
         for offset_x, offset_y in eyes:
-            painter.drawEllipse(QRectF(base_x + offset_x, base_y + offset_y, 4, 4))
+            painter.drawEllipse(QRectF(base_x + offset_x, base_y + offset_y, eye_size, eye_size))
 
     def _draw_hud(self, painter: QPainter) -> None:
         painter.setPen(QColor("#E6FAFF"))
@@ -1563,11 +1642,12 @@ class SnakeGame(QWidget):
         return
 
     def _draw_revive_overlay(self, painter: QPainter) -> None:
+        rect_h = 164
         rect = QRectF(
             self.board_x + 80,
-            self.board_y + 204,
+            self.board_y + (self.board_height - rect_h) / 2,
             self.board_width - 160,
-            164,
+            rect_h,
         )
         painter.setPen(QPen(QColor("#3A6787"), 2))
         painter.setBrush(QColor(4, 16, 24, 228))
@@ -1627,7 +1707,7 @@ class SnakeGame(QWidget):
 
         rect = QRectF(
             self.board_x + 90,
-            self.board_y + 214,
+            self.board_y + (self.board_height - 136) / 2,
             self.board_width - 180,
             136,
         )
@@ -1694,7 +1774,7 @@ class SnakeGame(QWidget):
         painter.fillRect(self.rect(), QColor(3, 12, 18, 168))
 
         modal_w = 640
-        modal_h = 548
+        modal_h = 604
         mx = (self.window_width - modal_w) / 2
         my = (self.window_height - modal_h) / 2
         modal = QRectF(mx, my, modal_w, modal_h)
@@ -1743,6 +1823,14 @@ class SnakeGame(QWidget):
         self._draw_setting_row(
             painter,
             row_y + row_gap * 3,
+            self._t("display_scale"),
+            f"{self._t('scale_level')} {self.display_scale}%",
+            "settings_scale_prev",
+            "settings_scale_next",
+        )
+        self._draw_setting_row(
+            painter,
+            row_y + row_gap * 4,
             self._t("snake_color"),
             self._t("snake_color_" + self.snake_color_style),
             "settings_color_prev",
@@ -1750,7 +1838,7 @@ class SnakeGame(QWidget):
         )
         self._draw_setting_row(
             painter,
-            row_y + row_gap * 4,
+            row_y + row_gap * 5,
             self._t("snake_shape"),
             self._t("snake_shape_" + self.snake_shape_style),
             "settings_shape_prev",
@@ -1758,14 +1846,14 @@ class SnakeGame(QWidget):
         )
         self._draw_setting_row(
             painter,
-            row_y + row_gap * 5,
+            row_y + row_gap * 6,
             self._t("food_style"),
             self._t("food_style_" + self.food_style),
             "settings_food_prev",
             "settings_food_next",
         )
 
-        speed_top = row_y + row_gap * 6 + 10
+        speed_top = row_y + row_gap * 7 + 10
         speed_label_rect = QRectF(mx + 28, speed_top, 180, 36)
         painter.setFont(QFont("Avenir Next", 12, QFont.Bold))
         painter.setPen(QColor("#9CC6D8"))

@@ -1,0 +1,8 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "python3 web_snake/server.py"
+healthcheckPath = "/healthz"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5

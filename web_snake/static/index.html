@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neon Snake Web</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <header class="topbar">
+      <div>
+        <h1>Neon Snake Web</h1>
+        <p>免安装浏览器版: 单人 + 双人在线</p>
+      </div>
+      <div class="top-actions">
+        <button class="tab-btn active" data-tab="single">单人模式</button>
+        <button class="tab-btn" data-tab="online">双人在线</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section id="tab-single" class="tab-panel active">
+        <div class="panel-grid">
+          <div class="game-card">
+            <div class="canvas-stage" id="singleStage">
+              <canvas id="singleCanvas" width="576" height="480"></canvas>
+              <div id="singleOverlay" class="canvas-overlay hidden">
+                <div class="overlay-title" id="singleOverlayTitle">准备开始</div>
+                <div class="overlay-sub" id="singleOverlaySub">按方向键 / WASD / 点击方向键开始</div>
+              </div>
+              <div id="reviveOverlay" class="revive-overlay hidden">
+                <h3>无敌模式: 是否复活?</h3>
+                <p>会复活到更安全的位置。</p>
+                <div class="revive-actions">
+                  <button id="reviveYesBtn">复活继续 (Y)</button>
+                  <button id="reviveNoBtn">结束本局 (N)</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="control-card">
+            <h2>单人设置</h2>
+            <div class="stat-grid">
+              <div><span>Score</span><strong id="singleScore">0</strong></div>
+              <div><span>Best</span><strong id="singleBest">0</strong></div>
+              <div><span>Length</span><strong id="singleLength">4</strong></div>
+              <div><span>Best Length</span><strong id="singleBestLength">4</strong></div>
+            </div>
+
+            <label>难度
+              <select id="singleDifficulty">
+                <option value="easy">入门</option>
+                <option value="mixed" selected>进阶</option>
+                <option value="hard">困难</option>
+              </select>
+            </label>
+
+            <label>速度
+              <input id="singleSpeed" type="range" min="1" max="9" value="5" />
+              <span id="singleSpeedLabel">5</span>
+            </label>
+
+            <label>画面缩放
+              <input id="singleScale" type="range" min="80" max="150" step="5" value="100" />
+              <span id="singleScaleLabel">100%</span>
+            </label>
+
+            <label>模式
+              <select id="singleMode">
+                <option value="normal" selected>普通</option>
+                <option value="invincible">无敌复活</option>
+              </select>
+            </label>
+
+            <div class="btn-row">
+              <button id="singleStartBtn">开始/继续</button>
+              <button id="singlePauseBtn">暂停</button>
+              <button id="singleRestartBtn">重开</button>
+            </div>
+
+            <div class="dpad-wrap">
+              <div class="dpad-title">鼠标操作</div>
+              <div class="dpad">
+                <button data-single-dir="up" class="dpad-key top">↑</button>
+                <button data-single-dir="left" class="dpad-key left">←</button>
+                <button data-single-dir="down" class="dpad-key down">↓</button>
+                <button data-single-dir="right" class="dpad-key right">→</button>
+              </div>
+            </div>
+
+            <p class="hint">键盘: WASD / 方向键, 空格暂停, R 重开, Y/N 复活确认</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="tab-online" class="tab-panel">
+        <div class="online-top">
+          <div class="online-card">
+            <h2>创建房间</h2>
+            <label>你的昵称
+              <input id="playerNameInput" type="text" maxlength="14" placeholder="Player 1" />
+            </label>
+            <label>双人模式
+              <select id="onlineMode">
+                <option value="separate" selected>模式1: 分屏各吃各的</option>
+                <option value="arena">模式2: 同屏抢同一颗豆子</option>
+              </select>
+            </label>
+            <button id="createRoomBtn">创建房间</button>
+          </div>
+
+          <div class="online-card">
+            <h2>加入房间</h2>
+            <label>房间号
+              <input id="roomCodeInput" type="text" maxlength="6" placeholder="输入 6 位房间号" />
+            </label>
+            <label>画面缩放
+              <input id="onlineScale" type="range" min="80" max="150" step="5" value="100" />
+              <span id="onlineScaleLabel">100%</span>
+            </label>
+            <button id="joinRoomBtn">加入房间</button>
+            <div class="room-info">
+              <div>当前房间: <strong id="currentRoomCode">-</strong></div>
+              <button id="copyInviteBtn">复制邀请链接</button>
+              <button id="startMatchBtn">开始对战(房主)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="online-status" id="onlineStatus">未连接房间</div>
+
+        <div class="online-board-card">
+          <canvas id="onlineArenaCanvas" width="576" height="480" class="hidden"></canvas>
+
+          <div id="onlineSplitWrap" class="split-wrap hidden">
+            <div class="split-board">
+              <h3 id="leftPlayerLabel">左侧玩家</h3>
+              <canvas id="onlineLeftCanvas" width="480" height="400"></canvas>
+            </div>
+            <div class="split-board">
+              <h3 id="rightPlayerLabel">右侧玩家</h3>
+              <canvas id="onlineRightCanvas" width="480" height="400"></canvas>
+            </div>
+          </div>
+
+          <div id="onlineResultBanner" class="result-banner hidden">
+            <div class="result-emoji" id="resultEmoji">😄🎉</div>
+            <div id="resultText">等待结果</div>
+          </div>
+        </div>
+
+        <div class="online-footer">
+          <div class="online-score" id="onlineScoreRow">P1 0 : 0 P2</div>
+          <div class="dpad-wrap">
+            <div class="dpad-title">双人操控</div>
+            <div class="dpad">
+              <button data-online-dir="up" class="dpad-key top">↑</button>
+              <button data-online-dir="left" class="dpad-key left">←</button>
+              <button data-online-dir="down" class="dpad-key down">↓</button>
+              <button data-online-dir="right" class="dpad-key right">→</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
