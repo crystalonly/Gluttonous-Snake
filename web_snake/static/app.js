@@ -408,7 +408,7 @@ const onlinePrefs = {
   speedLevel: 5,
   gridCols: 32,
   gridRows: 24,
-  miniPosition: "right-top",
+  miniPosition: "left-top",
   snakeColor: "sunset",
   snakeShape: "square",
   foodStyle: "crystal",
@@ -448,6 +448,13 @@ const singleSpeedInlineValue = $("singleSpeedInlineValue");
 const singleDifficultyTag = $("singleDifficultyTag");
 const singleModeTag = $("singleModeTag");
 const singleGridTag = $("singleGridTag");
+const singleDifficultyInlineEl = $("singleDifficultyInline");
+const singleModeInlineEl = $("singleModeInline");
+const singleSnakeColorInlineEl = $("singleSnakeColorInline");
+const singleSnakeShapeInlineEl = $("singleSnakeShapeInline");
+const singleFoodStyleInlineEl = $("singleFoodStyleInline");
+const singleGridColsInlineEl = $("singleGridColsInline");
+const singleGridRowsInlineEl = $("singleGridRowsInline");
 
 const singleStartBtn = $("singleStartBtn");
 const singlePauseBtn = $("singlePauseBtn");
@@ -478,6 +485,7 @@ const onlineMainCtx = onlineMainCanvas.getContext("2d");
 const onlineMiniWrap = $("onlineMiniWrap");
 const onlineMiniCanvas = $("onlineMiniCanvas");
 const onlineMiniCtx = onlineMiniCanvas.getContext("2d");
+const onlineQuickPanel = $("onlineQuickPanel");
 const mainPlayerLabel = $("mainPlayerLabel");
 const miniPlayerLabel = $("miniPlayerLabel");
 const onlineResultBanner = $("onlineResultBanner");
@@ -518,6 +526,19 @@ const miniMapPositionEl = $("miniMapPosition");
 const applyOnlineConfigBtn = $("applyOnlineConfigBtn");
 const applyOnlineStyleBtn = $("applyOnlineStyleBtn");
 const onlineConfigHint = $("onlineConfigHint");
+const onlineModePanelEl = $("onlineModePanel");
+const onlineDifficultyPanelEl = $("onlineDifficultyPanel");
+const onlineSpeedPanelEl = $("onlineSpeedPanel");
+const onlineSpeedPanelLabel = $("onlineSpeedPanelLabel");
+const miniMapPositionPanelEl = $("miniMapPositionPanel");
+const onlineSnakeColorPanelEl = $("onlineSnakeColorPanel");
+const onlineSnakeShapePanelEl = $("onlineSnakeShapePanel");
+const onlineFoodStylePanelEl = $("onlineFoodStylePanel");
+const onlineFoodColorPanelEl = $("onlineFoodColorPanel");
+const onlineGridColsPanelEl = $("onlineGridColsPanel");
+const onlineGridRowsPanelEl = $("onlineGridRowsPanel");
+const applyOnlineConfigPanelBtn = $("applyOnlineConfigPanelBtn");
+const applyOnlineStylePanelBtn = $("applyOnlineStylePanelBtn");
 
 function t(key) {
   const dict = I18N[uiState.language] || I18N.zh;
@@ -543,7 +564,7 @@ function normalizeMode(value) {
 }
 
 function normalizeMiniPosition(value) {
-  return value === "left-top" ? "left-top" : "right-top";
+  return value === "right-top" ? "right-top" : "left-top";
 }
 
 function normalizeStyle(style) {
@@ -720,34 +741,59 @@ function updateControlsFromState() {
   cellSizeLabel.textContent = `${uiState.cellSize}px`;
 
   singleDifficultyEl.value = singleState.difficulty;
+  singleDifficultyInlineEl.value = singleState.difficulty;
   singleSpeedEl.value = String(singleState.speedLevel);
   singleSpeedInlineEl.value = String(singleState.speedLevel);
   singleSpeedLabel.textContent = String(singleState.speedLevel);
   singleModeEl.value = singleState.mode;
+  singleModeInlineEl.value = singleState.mode;
   singleSnakeColorEl.value = singleState.snakeColor;
+  singleSnakeColorInlineEl.value = singleState.snakeColor;
   singleSnakeShapeEl.value = singleState.snakeShape;
+  singleSnakeShapeInlineEl.value = singleState.snakeShape;
   singleFoodStyleEl.value = singleState.foodStyle;
+  singleFoodStyleInlineEl.value = singleState.foodStyle;
   singleGridColsEl.value = String(singleState.gridCols);
   singleGridRowsEl.value = String(singleState.gridRows);
+  singleGridColsInlineEl.value = String(singleState.gridCols);
+  singleGridRowsInlineEl.value = String(singleState.gridRows);
 
   onlineModeSettingEl.value = onlinePrefs.mode;
   onlineModeQuickEl.value = onlinePrefs.mode;
+  onlineModePanelEl.value = onlinePrefs.mode;
   onlineDifficultySettingEl.value = onlinePrefs.difficulty;
   onlineDifficultyQuickEl.value = onlinePrefs.difficulty;
+  onlineDifficultyPanelEl.value = onlinePrefs.difficulty;
   onlineSpeedEl.value = String(onlinePrefs.speedLevel);
   onlineSpeedLabel.textContent = String(onlinePrefs.speedLevel);
+  onlineSpeedPanelEl.value = String(onlinePrefs.speedLevel);
+  onlineSpeedPanelLabel.textContent = String(onlinePrefs.speedLevel);
   onlineSnakeColorEl.value = onlinePrefs.snakeColor;
+  onlineSnakeColorPanelEl.value = onlinePrefs.snakeColor;
   onlineSnakeShapeEl.value = onlinePrefs.snakeShape;
+  onlineSnakeShapePanelEl.value = onlinePrefs.snakeShape;
   onlineFoodStyleEl.value = onlinePrefs.foodStyle;
+  onlineFoodStylePanelEl.value = onlinePrefs.foodStyle;
   onlineFoodColorEl.value = onlinePrefs.foodColor;
+  onlineFoodColorPanelEl.value = onlinePrefs.foodColor;
   onlineGridColsEl.value = String(onlinePrefs.gridCols);
   onlineGridRowsEl.value = String(onlinePrefs.gridRows);
+  onlineGridColsPanelEl.value = String(onlinePrefs.gridCols);
+  onlineGridRowsPanelEl.value = String(onlinePrefs.gridRows);
   miniMapPositionEl.value = onlinePrefs.miniPosition;
+  miniMapPositionPanelEl.value = onlinePrefs.miniPosition;
 }
 
 function applyMiniPositionClass() {
   onlineMiniWrap.classList.remove("mini-pos-right-top", "mini-pos-left-top");
-  onlineMiniWrap.classList.add(onlinePrefs.miniPosition === "left-top" ? "mini-pos-left-top" : "mini-pos-right-top");
+  onlineQuickPanel.classList.remove("panel-pos-right", "panel-pos-left");
+  if (onlinePrefs.miniPosition === "left-top") {
+    onlineMiniWrap.classList.add("mini-pos-left-top");
+    onlineQuickPanel.classList.add("panel-pos-right");
+  } else {
+    onlineMiniWrap.classList.add("mini-pos-right-top");
+    onlineQuickPanel.classList.add("panel-pos-left");
+  }
 }
 
 function singleMoveMs() {
@@ -1787,25 +1833,33 @@ function setupTabButtons() {
   });
 }
 
-function syncSingleGridSettings() {
-  const nextCols = clamp(intOr(singleGridColsEl.value, singleState.gridCols), LIMITS.cols.min, LIMITS.cols.max);
-  const nextRows = clamp(intOr(singleGridRowsEl.value, singleState.gridRows), LIMITS.rows.min, LIMITS.rows.max);
+function syncSingleGridSettings(source = "modal") {
+  const colsInput = source === "inline" ? singleGridColsInlineEl : singleGridColsEl;
+  const rowsInput = source === "inline" ? singleGridRowsInlineEl : singleGridRowsEl;
+  const nextCols = clamp(intOr(colsInput.value, singleState.gridCols), LIMITS.cols.min, LIMITS.cols.max);
+  const nextRows = clamp(intOr(rowsInput.value, singleState.gridRows), LIMITS.rows.min, LIMITS.rows.max);
   singleState.gridCols = nextCols;
   singleState.gridRows = nextRows;
   singleGridColsEl.value = String(nextCols);
   singleGridRowsEl.value = String(nextRows);
+  singleGridColsInlineEl.value = String(nextCols);
+  singleGridRowsInlineEl.value = String(nextRows);
   restartSingle();
   resizeAllCanvases();
   saveSettings();
 }
 
-function syncOnlineGridSettings() {
-  const nextCols = clamp(intOr(onlineGridColsEl.value, onlinePrefs.gridCols), LIMITS.cols.min, LIMITS.cols.max);
-  const nextRows = clamp(intOr(onlineGridRowsEl.value, onlinePrefs.gridRows), LIMITS.rows.min, LIMITS.rows.max);
+function syncOnlineGridSettings(source = "modal") {
+  const colsInput = source === "panel" ? onlineGridColsPanelEl : onlineGridColsEl;
+  const rowsInput = source === "panel" ? onlineGridRowsPanelEl : onlineGridRowsEl;
+  const nextCols = clamp(intOr(colsInput.value, onlinePrefs.gridCols), LIMITS.cols.min, LIMITS.cols.max);
+  const nextRows = clamp(intOr(rowsInput.value, onlinePrefs.gridRows), LIMITS.rows.min, LIMITS.rows.max);
   onlinePrefs.gridCols = nextCols;
   onlinePrefs.gridRows = nextRows;
   onlineGridColsEl.value = String(nextCols);
   onlineGridRowsEl.value = String(nextRows);
+  onlineGridColsPanelEl.value = String(nextCols);
+  onlineGridRowsPanelEl.value = String(nextRows);
   updateOnlineStaticTexts();
   resizeOnlineCanvases();
   saveSettings();
@@ -1844,6 +1898,13 @@ function setupSettingsActions() {
 
   singleDifficultyEl.addEventListener("change", () => {
     singleState.difficulty = singleDifficultyEl.value;
+    singleDifficultyInlineEl.value = singleState.difficulty;
+    updateSingleStats();
+    saveSettings();
+  });
+  singleDifficultyInlineEl.addEventListener("change", () => {
+    singleState.difficulty = singleDifficultyInlineEl.value;
+    singleDifficultyEl.value = singleState.difficulty;
     updateSingleStats();
     saveSettings();
   });
@@ -1857,23 +1918,50 @@ function setupSettingsActions() {
   });
   singleModeEl.addEventListener("change", () => {
     singleState.mode = singleModeEl.value;
+    singleModeInlineEl.value = singleState.mode;
+    updateSingleStats();
+    saveSettings();
+  });
+  singleModeInlineEl.addEventListener("change", () => {
+    singleState.mode = singleModeInlineEl.value;
+    singleModeEl.value = singleState.mode;
     updateSingleStats();
     saveSettings();
   });
   singleSnakeColorEl.addEventListener("change", () => {
     singleState.snakeColor = normalizeStyle({ snakeColor: singleSnakeColorEl.value }).snakeColor;
+    singleSnakeColorInlineEl.value = singleState.snakeColor;
+    saveSettings();
+  });
+  singleSnakeColorInlineEl.addEventListener("change", () => {
+    singleState.snakeColor = normalizeStyle({ snakeColor: singleSnakeColorInlineEl.value }).snakeColor;
+    singleSnakeColorEl.value = singleState.snakeColor;
     saveSettings();
   });
   singleSnakeShapeEl.addEventListener("change", () => {
     singleState.snakeShape = normalizeStyle({ snakeShape: singleSnakeShapeEl.value }).snakeShape;
+    singleSnakeShapeInlineEl.value = singleState.snakeShape;
+    saveSettings();
+  });
+  singleSnakeShapeInlineEl.addEventListener("change", () => {
+    singleState.snakeShape = normalizeStyle({ snakeShape: singleSnakeShapeInlineEl.value }).snakeShape;
+    singleSnakeShapeEl.value = singleState.snakeShape;
     saveSettings();
   });
   singleFoodStyleEl.addEventListener("change", () => {
     singleState.foodStyle = normalizeStyle({ foodStyle: singleFoodStyleEl.value }).foodStyle;
+    singleFoodStyleInlineEl.value = singleState.foodStyle;
     saveSettings();
   });
-  singleGridColsEl.addEventListener("change", syncSingleGridSettings);
-  singleGridRowsEl.addEventListener("change", syncSingleGridSettings);
+  singleFoodStyleInlineEl.addEventListener("change", () => {
+    singleState.foodStyle = normalizeStyle({ foodStyle: singleFoodStyleInlineEl.value }).foodStyle;
+    singleFoodStyleEl.value = singleState.foodStyle;
+    saveSettings();
+  });
+  singleGridColsEl.addEventListener("change", () => syncSingleGridSettings("modal"));
+  singleGridRowsEl.addEventListener("change", () => syncSingleGridSettings("modal"));
+  singleGridColsInlineEl.addEventListener("change", () => syncSingleGridSettings("inline"));
+  singleGridRowsInlineEl.addEventListener("change", () => syncSingleGridSettings("inline"));
   singleSpeedInlineEl.addEventListener("input", () => {
     singleState.speedLevel = clamp(intOr(singleSpeedInlineEl.value, singleState.speedLevel), LIMITS.speed.min, LIMITS.speed.max);
     singleSpeedEl.value = String(singleState.speedLevel);
@@ -1886,6 +1974,14 @@ function setupSettingsActions() {
   onlineModeSettingEl.addEventListener("change", () => {
     onlinePrefs.mode = normalizeMode(onlineModeSettingEl.value);
     onlineModeQuickEl.value = onlinePrefs.mode;
+    onlineModePanelEl.value = onlinePrefs.mode;
+    updateOnlineStaticTexts();
+    saveSettings();
+  });
+  onlineModePanelEl.addEventListener("change", () => {
+    onlinePrefs.mode = normalizeMode(onlineModePanelEl.value);
+    onlineModeSettingEl.value = onlinePrefs.mode;
+    onlineModeQuickEl.value = onlinePrefs.mode;
     updateOnlineStaticTexts();
     saveSettings();
   });
@@ -1894,40 +1990,94 @@ function setupSettingsActions() {
       ? onlineDifficultySettingEl.value
       : "mixed";
     onlineDifficultyQuickEl.value = onlinePrefs.difficulty;
+    onlineDifficultyPanelEl.value = onlinePrefs.difficulty;
+    saveSettings();
+  });
+  onlineDifficultyPanelEl.addEventListener("change", () => {
+    onlinePrefs.difficulty = ["easy", "mixed", "hard"].includes(onlineDifficultyPanelEl.value)
+      ? onlineDifficultyPanelEl.value
+      : "mixed";
+    onlineDifficultySettingEl.value = onlinePrefs.difficulty;
+    onlineDifficultyQuickEl.value = onlinePrefs.difficulty;
     saveSettings();
   });
   onlineSpeedEl.addEventListener("input", () => {
     onlinePrefs.speedLevel = clamp(intOr(onlineSpeedEl.value, onlinePrefs.speedLevel), LIMITS.speed.min, LIMITS.speed.max);
     onlineSpeedLabel.textContent = String(onlinePrefs.speedLevel);
+    onlineSpeedPanelEl.value = String(onlinePrefs.speedLevel);
+    onlineSpeedPanelLabel.textContent = String(onlinePrefs.speedLevel);
+    updateOnlineStaticTexts();
+    saveSettings();
+  });
+  onlineSpeedPanelEl.addEventListener("input", () => {
+    onlinePrefs.speedLevel = clamp(intOr(onlineSpeedPanelEl.value, onlinePrefs.speedLevel), LIMITS.speed.min, LIMITS.speed.max);
+    onlineSpeedEl.value = String(onlinePrefs.speedLevel);
+    onlineSpeedLabel.textContent = String(onlinePrefs.speedLevel);
+    onlineSpeedPanelLabel.textContent = String(onlinePrefs.speedLevel);
     updateOnlineStaticTexts();
     saveSettings();
   });
   onlineSnakeColorEl.addEventListener("change", () => {
     onlinePrefs.snakeColor = normalizeStyle({ snakeColor: onlineSnakeColorEl.value }).snakeColor;
+    onlineSnakeColorPanelEl.value = onlinePrefs.snakeColor;
+    saveSettings();
+  });
+  onlineSnakeColorPanelEl.addEventListener("change", () => {
+    onlinePrefs.snakeColor = normalizeStyle({ snakeColor: onlineSnakeColorPanelEl.value }).snakeColor;
+    onlineSnakeColorEl.value = onlinePrefs.snakeColor;
     saveSettings();
   });
   onlineSnakeShapeEl.addEventListener("change", () => {
     onlinePrefs.snakeShape = normalizeStyle({ snakeShape: onlineSnakeShapeEl.value }).snakeShape;
+    onlineSnakeShapePanelEl.value = onlinePrefs.snakeShape;
+    saveSettings();
+  });
+  onlineSnakeShapePanelEl.addEventListener("change", () => {
+    onlinePrefs.snakeShape = normalizeStyle({ snakeShape: onlineSnakeShapePanelEl.value }).snakeShape;
+    onlineSnakeShapeEl.value = onlinePrefs.snakeShape;
     saveSettings();
   });
   onlineFoodStyleEl.addEventListener("change", () => {
     onlinePrefs.foodStyle = normalizeStyle({ foodStyle: onlineFoodStyleEl.value }).foodStyle;
+    onlineFoodStylePanelEl.value = onlinePrefs.foodStyle;
+    saveSettings();
+  });
+  onlineFoodStylePanelEl.addEventListener("change", () => {
+    onlinePrefs.foodStyle = normalizeStyle({ foodStyle: onlineFoodStylePanelEl.value }).foodStyle;
+    onlineFoodStyleEl.value = onlinePrefs.foodStyle;
     saveSettings();
   });
   onlineFoodColorEl.addEventListener("change", () => {
     onlinePrefs.foodColor = normalizeStyle({ foodColor: onlineFoodColorEl.value }).foodColor;
+    onlineFoodColorPanelEl.value = onlinePrefs.foodColor;
     saveSettings();
   });
-  onlineGridColsEl.addEventListener("change", syncOnlineGridSettings);
-  onlineGridRowsEl.addEventListener("change", syncOnlineGridSettings);
+  onlineFoodColorPanelEl.addEventListener("change", () => {
+    onlinePrefs.foodColor = normalizeStyle({ foodColor: onlineFoodColorPanelEl.value }).foodColor;
+    onlineFoodColorEl.value = onlinePrefs.foodColor;
+    saveSettings();
+  });
+  onlineGridColsEl.addEventListener("change", () => syncOnlineGridSettings("modal"));
+  onlineGridRowsEl.addEventListener("change", () => syncOnlineGridSettings("modal"));
+  onlineGridColsPanelEl.addEventListener("change", () => syncOnlineGridSettings("panel"));
+  onlineGridRowsPanelEl.addEventListener("change", () => syncOnlineGridSettings("panel"));
   miniMapPositionEl.addEventListener("change", () => {
     onlinePrefs.miniPosition = normalizeMiniPosition(miniMapPositionEl.value);
+    miniMapPositionPanelEl.value = onlinePrefs.miniPosition;
+    applyMiniPositionClass();
+    saveSettings();
+  });
+  miniMapPositionPanelEl.addEventListener("change", () => {
+    onlinePrefs.miniPosition = normalizeMiniPosition(miniMapPositionPanelEl.value);
+    miniMapPositionEl.value = onlinePrefs.miniPosition;
     applyMiniPositionClass();
     saveSettings();
   });
 
   applyOnlineConfigBtn.addEventListener("click", applyOnlineConfigToRoom);
   applyOnlineStyleBtn.addEventListener("click", applyOnlineStyleToRoom);
+  applyOnlineConfigPanelBtn.addEventListener("click", applyOnlineConfigToRoom);
+  applyOnlineStylePanelBtn.addEventListener("click", applyOnlineStyleToRoom);
 }
 
 function setupSingleActions() {
@@ -1971,6 +2121,7 @@ function setupOnlineActions() {
   onlineModeQuickEl.addEventListener("change", () => {
     onlinePrefs.mode = normalizeMode(onlineModeQuickEl.value);
     onlineModeSettingEl.value = onlinePrefs.mode;
+    onlineModePanelEl.value = onlinePrefs.mode;
     updateOnlineStaticTexts();
     saveSettings();
   });
@@ -1979,6 +2130,7 @@ function setupOnlineActions() {
       ? onlineDifficultyQuickEl.value
       : "mixed";
     onlineDifficultySettingEl.value = onlinePrefs.difficulty;
+    onlineDifficultyPanelEl.value = onlinePrefs.difficulty;
     saveSettings();
   });
   createRoomBtn.addEventListener("click", handleCreateRoom);

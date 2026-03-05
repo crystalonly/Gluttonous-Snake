@@ -1245,6 +1245,12 @@ class SnakeGame(QWidget):
         if action == "speed_plus":
             self._change_speed(1)
             return
+        if action == "difficulty_minus":
+            self._cycle_difficulty(-1)
+            return
+        if action == "difficulty_plus":
+            self._cycle_difficulty(1)
+            return
         if action == "settings_close":
             self._close_settings()
             return
@@ -1596,7 +1602,6 @@ class SnakeGame(QWidget):
         value_width = max(44.0, content_right - value_left)
 
         difficulty_name = self._t("difficulty_" + self.difficulty)
-        last_value = f"{self.last_score}/{self.last_length}" if self.games_played > 0 else "0/0"
         stats = [
             (self._t("score"), str(self.score)),
             (self._t("best_score"), str(self.best_score)),
@@ -1604,7 +1609,6 @@ class SnakeGame(QWidget):
             (self._t("best_length"), str(self.best_length)),
             (self._t("difficulty"), difficulty_name),
             (self._t("games"), str(self.games_played)),
-            (self._t("last"), last_value),
         ]
 
         title_font = QFont("Avenir Next", 10, QFont.Bold)
@@ -1630,7 +1634,24 @@ class SnakeGame(QWidget):
 
         button_x = content_left
         button_w = content_right - content_left
-        button_y = self.panel_y + 318
+
+        diff_minus_rect = QRectF(button_x, y + 2, 44, 32)
+        diff_plus_rect = QRectF(button_x + button_w - 44, y + 2, 44, 32)
+        diff_value_rect = QRectF(button_x + 52, y + 2, button_w - 104, 32)
+        self._draw_button(painter, "difficulty_minus", diff_minus_rect, "-")
+        self._draw_button(painter, "difficulty_plus", diff_plus_rect, "+")
+        painter.setPen(QPen(QColor("#3C7191"), 1.5))
+        painter.setBrush(QColor("#122E42"))
+        painter.drawRoundedRect(diff_value_rect, 8, 8)
+        painter.setFont(QFont("Avenir Next", 11, QFont.DemiBold))
+        painter.setPen(QColor("#E8FCFF"))
+        painter.drawText(
+            diff_value_rect,
+            Qt.AlignCenter,
+            f"{self._t('difficulty')} {difficulty_name}",
+        )
+
+        button_y = self.panel_y + 336
 
         if self.state == "running":
             primary_label = self._t("pause")

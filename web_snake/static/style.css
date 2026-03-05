@@ -264,6 +264,23 @@ canvas {
   font-size: 12px;
 }
 
+.single-inline-controls {
+  margin-top: 10px;
+  border: 1px solid rgba(96, 150, 194, 0.36);
+  border-radius: 10px;
+  background: rgba(9, 23, 37, 0.72);
+  padding: 9px;
+}
+
+.single-inline-controls .inline-fields {
+  margin-top: 4px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.single-inline-controls label {
+  margin-bottom: 7px;
+}
+
 .btn-row {
   margin-top: 10px;
   display: flex;
@@ -481,6 +498,62 @@ input[type="range"] {
   height: auto;
 }
 
+.online-quick-panel {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  width: min(270px, 35%);
+  border: 1px solid rgba(118, 174, 216, 0.56);
+  border-radius: 10px;
+  background: rgba(6, 18, 31, 0.88);
+  padding: 8px;
+  overflow: auto;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.34);
+}
+
+.online-quick-panel h4 {
+  margin: 2px 0 8px;
+  text-align: center;
+  color: #d5eeff;
+  font-size: 14px;
+}
+
+.online-quick-panel label {
+  margin-bottom: 7px;
+  font-size: 12px;
+}
+
+.online-quick-panel .inline-fields {
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.online-quick-panel .btn-row {
+  margin-top: 8px;
+}
+
+.online-quick-panel button {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+#onlineSpeedPanelLabel {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--accent);
+  text-align: right;
+}
+
+.panel-pos-right {
+  right: 10px;
+}
+
+.panel-pos-left {
+  left: 10px;
+}
+
 .online-bottom {
   display: grid;
   grid-template-columns: minmax(240px, 1fr) 250px;
@@ -679,5 +752,9 @@ input[type="range"] {
   .separate-mini {
     min-width: 150px;
     width: min(42%, 240px);
+  }
+
+  .online-quick-panel {
+    width: min(52%, 260px);
   }
 }
