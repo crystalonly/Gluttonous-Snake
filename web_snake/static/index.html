@@ -65,10 +65,10 @@
             <div class="single-quick-card">
               <label>
                 <span data-i18n="speed_label">速度</span>
-                <input id="singleSpeedInline" type="range" min="1" max="10" value="5" />
+                <input id="singleSpeedInline" type="range" min="1" max="10" value="7" />
               </label>
               <div class="quick-speed-row">
-                <strong id="singleSpeedInlineValue">5</strong>
+                <strong id="singleSpeedInlineValue">7</strong>
               </div>
               <div class="quick-tags">
                 <span id="singleDifficultyTag">进阶</span>
@@ -81,7 +81,7 @@
                 <span data-i18n="difficulty">难度</span>
                 <select id="singleDifficultyInline">
                   <option value="easy" data-i18n="difficulty_easy">入门</option>
-                  <option value="mixed" data-i18n="difficulty_mixed">进阶</option>
+                  <option value="mixed" data-i18n="difficulty_mixed" selected>进阶</option>
                   <option value="hard" data-i18n="difficulty_hard">困难</option>
                 </select>
               </label>
@@ -98,7 +98,7 @@
                   <option value="neon" data-i18n="snake_color_neon">霓虹青</option>
                   <option value="forest" data-i18n="snake_color_forest">森林绿</option>
                   <option value="sunset" data-i18n="snake_color_sunset">落日橙</option>
-                  <option value="glacier" data-i18n="snake_color_glacier">冰川蓝</option>
+                  <option value="glacier" data-i18n="snake_color_glacier" selected>冰川蓝</option>
                 </select>
               </label>
               <label class="compact-hide">
@@ -117,6 +117,15 @@
                   <option value="crystal" data-i18n="food_style_crystal">水晶</option>
                   <option value="star" data-i18n="food_style_star">星芒</option>
                   <option value="ring" data-i18n="food_style_ring">光环</option>
+                </select>
+              </label>
+              <label class="compact-hide">
+                <span data-i18n="food_color">豆子颜色</span>
+                <select id="singleFoodColorInline">
+                  <option value="classic" data-i18n="food_color_classic">经典红</option>
+                  <option value="mint" data-i18n="food_color_mint">薄荷绿</option>
+                  <option value="violet" data-i18n="food_color_violet">紫晶色</option>
+                  <option value="sun" data-i18n="food_color_sun">太阳金</option>
                 </select>
               </label>
               <div class="inline-fields">
@@ -186,7 +195,7 @@
                 <span data-i18n="difficulty">难度</span>
                 <select id="onlineDifficultyQuick">
                   <option value="easy" data-i18n="difficulty_easy">入门</option>
-                  <option value="mixed" data-i18n="difficulty_mixed">进阶</option>
+                  <option value="mixed" data-i18n="difficulty_mixed" selected>进阶</option>
                   <option value="hard" data-i18n="difficulty_hard">困难</option>
                 </select>
               </label>
@@ -195,14 +204,14 @@
             <div class="btn-row wrap">
               <button id="createRoomBtn" data-i18n="create_room">创建房间</button>
               <button id="joinRoomBtn" data-i18n="join_room">加入房间</button>
-              <button id="startMatchBtn" data-i18n="start_match">开始对战(房主)</button>
               <button id="copyInviteBtn" data-i18n="copy_invite">复制邀请链接</button>
+              <button id="startMatchBtn" class="start-match-btn" data-i18n="start_match">开始对战(房主)</button>
             </div>
 
             <div class="room-meta">
               <div><span data-i18n="current_room">当前房间</span>: <strong id="currentRoomCode">-</strong></div>
               <div><span data-i18n="online_mode">模式</span>: <strong id="onlineModeTag">-</strong></div>
-              <div><span data-i18n="speed_label">速度</span>: <strong id="onlineSpeedTag">5</strong></div>
+              <div><span data-i18n="speed_label">速度</span>: <strong id="onlineSpeedTag">7</strong></div>
               <div><span data-i18n="grid_size">网格</span>: <strong id="onlineGridTag">28 x 24</strong></div>
             </div>
             <div class="online-status" id="onlineStatus">未连接房间</div>
@@ -224,25 +233,25 @@
 
             <div id="onlineQuickPanel" class="online-quick-panel panel-pos-right">
               <h4 data-i18n="online_settings">双人设置</h4>
-              <label>
+              <label class="panel-mode-field">
                 <span data-i18n="online_mode">模式</span>
                 <select id="onlineModePanel">
                   <option value="separate" data-i18n="online_mode_separate">模式1: 分屏各吃各的</option>
                   <option value="arena" data-i18n="online_mode_arena">模式2: 同屏抢同一颗豆子</option>
                 </select>
               </label>
-              <label>
+              <label class="panel-difficulty-field">
                 <span data-i18n="difficulty">难度</span>
                 <select id="onlineDifficultyPanel">
                   <option value="easy" data-i18n="difficulty_easy">入门</option>
-                  <option value="mixed" data-i18n="difficulty_mixed">进阶</option>
+                  <option value="mixed" data-i18n="difficulty_mixed" selected>进阶</option>
                   <option value="hard" data-i18n="difficulty_hard">困难</option>
                 </select>
               </label>
               <label>
                 <span data-i18n="speed_label">速度</span>
-                <input id="onlineSpeedPanel" type="range" min="1" max="10" value="5" />
-                <strong id="onlineSpeedPanelLabel">5</strong>
+                <input id="onlineSpeedPanel" type="range" min="1" max="10" value="7" />
+                <strong id="onlineSpeedPanelLabel">7</strong>
               </label>
               <label>
                 <span data-i18n="mini_position">小窗位置</span>
@@ -257,7 +266,7 @@
                   <option value="neon" data-i18n="snake_color_neon">霓虹青</option>
                   <option value="forest" data-i18n="snake_color_forest">森林绿</option>
                   <option value="sunset" data-i18n="snake_color_sunset">落日橙</option>
-                  <option value="glacier" data-i18n="snake_color_glacier">冰川蓝</option>
+                  <option value="glacier" data-i18n="snake_color_glacier" selected>冰川蓝</option>
                 </select>
               </label>
               <label>
@@ -357,6 +366,16 @@
               </select>
             </label>
             <label>
+              <span data-i18n="theme">主题</span>
+              <select id="themeSelect">
+                <option value="default" data-i18n="theme_default">深海霓虹</option>
+                <option value="aurora" data-i18n="theme_aurora">极光青</option>
+                <option value="forest" data-i18n="theme_forest">森林夜</option>
+                <option value="sunset" data-i18n="theme_sunset">晚霞橙</option>
+                <option value="mono" data-i18n="theme_mono">石墨灰</option>
+              </select>
+            </label>
+            <label>
               <span data-i18n="view_scale">画面缩放</span>
               <input id="viewScaleRange" type="range" min="70" max="140" step="5" value="100" />
               <span id="viewScaleLabel">100%</span>
@@ -374,14 +393,14 @@
               <span data-i18n="difficulty">难度</span>
               <select id="singleDifficulty">
                 <option value="easy" data-i18n="difficulty_easy">入门</option>
-                <option value="mixed" data-i18n="difficulty_mixed">进阶</option>
+                <option value="mixed" data-i18n="difficulty_mixed" selected>进阶</option>
                 <option value="hard" data-i18n="difficulty_hard">困难</option>
               </select>
             </label>
             <label>
               <span data-i18n="speed_label">速度</span>
-              <input id="singleSpeed" type="range" min="1" max="10" value="5" />
-              <span id="singleSpeedLabel">5</span>
+              <input id="singleSpeed" type="range" min="1" max="10" value="7" />
+              <span id="singleSpeedLabel">7</span>
             </label>
             <label>
               <span data-i18n="single_mode">模式</span>
@@ -396,7 +415,7 @@
                 <option value="neon" data-i18n="snake_color_neon">霓虹青</option>
                 <option value="forest" data-i18n="snake_color_forest">森林绿</option>
                 <option value="sunset" data-i18n="snake_color_sunset">落日橙</option>
-                <option value="glacier" data-i18n="snake_color_glacier">冰川蓝</option>
+                <option value="glacier" data-i18n="snake_color_glacier" selected>冰川蓝</option>
               </select>
             </label>
             <label>
@@ -415,6 +434,15 @@
                 <option value="crystal" data-i18n="food_style_crystal">水晶</option>
                 <option value="star" data-i18n="food_style_star">星芒</option>
                 <option value="ring" data-i18n="food_style_ring">光环</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="food_color">豆子颜色</span>
+              <select id="singleFoodColor">
+                <option value="classic" data-i18n="food_color_classic">经典红</option>
+                <option value="mint" data-i18n="food_color_mint">薄荷绿</option>
+                <option value="violet" data-i18n="food_color_violet">紫晶色</option>
+                <option value="sun" data-i18n="food_color_sun">太阳金</option>
               </select>
             </label>
             <div class="inline-fields">
@@ -447,14 +475,14 @@
             </label>
             <label>
               <span data-i18n="speed_label">速度</span>
-              <input id="onlineSpeed" type="range" min="1" max="10" value="5" />
-              <span id="onlineSpeedLabel">5</span>
+              <input id="onlineSpeed" type="range" min="1" max="10" value="7" />
+              <span id="onlineSpeedLabel">7</span>
             </label>
             <label>
               <span data-i18n="difficulty">难度</span>
               <select id="onlineDifficultySetting">
                 <option value="easy" data-i18n="difficulty_easy">入门</option>
-                <option value="mixed" data-i18n="difficulty_mixed">进阶</option>
+                <option value="mixed" data-i18n="difficulty_mixed" selected>进阶</option>
                 <option value="hard" data-i18n="difficulty_hard">困难</option>
               </select>
             </label>
@@ -464,7 +492,7 @@
                 <option value="neon" data-i18n="snake_color_neon">霓虹青</option>
                 <option value="forest" data-i18n="snake_color_forest">森林绿</option>
                 <option value="sunset" data-i18n="snake_color_sunset">落日橙</option>
-                <option value="glacier" data-i18n="snake_color_glacier">冰川蓝</option>
+                <option value="glacier" data-i18n="snake_color_glacier" selected>冰川蓝</option>
               </select>
             </label>
             <label>

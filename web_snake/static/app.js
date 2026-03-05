@@ -53,6 +53,12 @@ const I18N = {
     single_settings: "单人设置",
     online_settings: "双人设置",
     language: "语言",
+    theme: "主题",
+    theme_default: "深海霓虹",
+    theme_aurora: "极光青",
+    theme_forest: "森林夜",
+    theme_sunset: "晚霞橙",
+    theme_mono: "石墨灰",
     lang_zh: "中文",
     lang_en: "英文",
     lang_ja: "日文",
@@ -164,6 +170,12 @@ const I18N = {
     single_settings: "Single Settings",
     online_settings: "Online Settings",
     language: "Language",
+    theme: "Theme",
+    theme_default: "Neon Sea",
+    theme_aurora: "Aurora Cyan",
+    theme_forest: "Forest Night",
+    theme_sunset: "Sunset Amber",
+    theme_mono: "Graphite",
     lang_zh: "Chinese",
     lang_en: "English",
     lang_ja: "Japanese",
@@ -275,6 +287,12 @@ const I18N = {
     single_settings: "シングル設定",
     online_settings: "対戦設定",
     language: "言語",
+    theme: "テーマ",
+    theme_default: "ネオン深海",
+    theme_aurora: "オーロラ",
+    theme_forest: "フォレスト",
+    theme_sunset: "夕焼け",
+    theme_mono: "グラファイト",
     lang_zh: "中国語",
     lang_en: "英語",
     lang_ja: "日本語",
@@ -380,6 +398,7 @@ const I18N = {
 const uiState = {
   tab: "single",
   language: "zh",
+  theme: "default",
   viewScale: 100,
   cellSize: 24,
 };
@@ -388,11 +407,12 @@ const singleState = {
   gridCols: 28,
   gridRows: 24,
   difficulty: "mixed",
-  speedLevel: 5,
+  speedLevel: 7,
   mode: "normal",
-  snakeColor: "neon",
+  snakeColor: "glacier",
   snakeShape: "rounded",
   foodStyle: "orb",
+  foodColor: "classic",
   snake: [],
   direction: [1, 0],
   nextDirection: [1, 0],
@@ -410,13 +430,13 @@ const singleState = {
 const onlinePrefs = {
   mode: "separate",
   difficulty: "mixed",
-  speedLevel: 5,
+  speedLevel: 7,
   gridCols: 32,
   gridRows: 24,
   miniPosition: "left-top",
-  snakeColor: "sunset",
-  snakeShape: "square",
-  foodStyle: "crystal",
+  snakeColor: "glacier",
+  snakeShape: "rounded",
+  foodStyle: "orb",
   foodColor: "classic",
 };
 
@@ -464,6 +484,7 @@ const singleModeInlineEl = $("singleModeInline");
 const singleSnakeColorInlineEl = $("singleSnakeColorInline");
 const singleSnakeShapeInlineEl = $("singleSnakeShapeInline");
 const singleFoodStyleInlineEl = $("singleFoodStyleInline");
+const singleFoodColorInlineEl = $("singleFoodColorInline");
 const singleGridColsInlineEl = $("singleGridColsInline");
 const singleGridRowsInlineEl = $("singleGridRowsInline");
 
@@ -509,6 +530,7 @@ const settingsModal = $("settingsModal");
 const openSettingsBtn = $("openSettingsBtn");
 const closeSettingsBtn = $("closeSettingsBtn");
 const languageSelect = $("languageSelect");
+const themeSelect = $("themeSelect");
 const viewScaleRange = $("viewScaleRange");
 const viewScaleLabel = $("viewScaleLabel");
 const cellSizeRange = $("cellSizeRange");
@@ -520,6 +542,7 @@ const singleModeEl = $("singleMode");
 const singleSnakeColorEl = $("singleSnakeColor");
 const singleSnakeShapeEl = $("singleSnakeShape");
 const singleFoodStyleEl = $("singleFoodStyle");
+const singleFoodColorEl = $("singleFoodColor");
 const singleGridColsEl = $("singleGridCols");
 const singleGridRowsEl = $("singleGridRows");
 
@@ -613,9 +636,17 @@ function isOpposite(a, b) {
   return a[0] === -b[0] && a[1] === -b[1];
 }
 
+function applyThemeToDom() {
+  const allowed = new Set(["default", "aurora", "forest", "sunset", "mono"]);
+  const theme = allowed.has(uiState.theme) ? uiState.theme : "default";
+  uiState.theme = theme;
+  document.documentElement.setAttribute("data-theme", theme);
+}
+
 function applyLanguageToDom() {
   document.documentElement.lang = uiState.language === "zh" ? "zh-CN" : uiState.language;
   document.title = t("app_title");
+  applyThemeToDom();
 
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
@@ -649,6 +680,7 @@ function loadSettings() {
   try {
     const data = JSON.parse(raw);
     uiState.language = ["zh", "en", "ja"].includes(data.language) ? data.language : uiState.language;
+    uiState.theme = ["default", "aurora", "forest", "sunset", "mono"].includes(data.theme) ? data.theme : uiState.theme;
     uiState.viewScale = clamp(intOr(data.viewScale, uiState.viewScale), LIMITS.viewScale.min, LIMITS.viewScale.max);
     uiState.cellSize = clamp(intOr(data.cellSize, uiState.cellSize), LIMITS.cellSize.min, LIMITS.cellSize.max);
 
@@ -660,6 +692,7 @@ function loadSettings() {
     singleState.snakeColor = normalizeStyle({ snakeColor: data.singleSnakeColor }).snakeColor;
     singleState.snakeShape = normalizeStyle({ snakeShape: data.singleSnakeShape }).snakeShape;
     singleState.foodStyle = normalizeStyle({ foodStyle: data.singleFoodStyle }).foodStyle;
+    singleState.foodColor = normalizeStyle({ foodColor: data.singleFoodColor }).foodColor;
     singleState.bestScore = Math.max(0, intOr(data.bestScore, singleState.bestScore));
     singleState.bestLength = Math.max(4, intOr(data.bestLength, singleState.bestLength));
     singleState.gamesPlayed = Math.max(0, intOr(data.gamesPlayed, singleState.gamesPlayed));
@@ -684,6 +717,7 @@ function loadSettings() {
 function saveSettings() {
   const payload = {
     language: uiState.language,
+    theme: uiState.theme,
     viewScale: uiState.viewScale,
     cellSize: uiState.cellSize,
     singleGridCols: singleState.gridCols,
@@ -694,6 +728,7 @@ function saveSettings() {
     singleSnakeColor: singleState.snakeColor,
     singleSnakeShape: singleState.snakeShape,
     singleFoodStyle: singleState.foodStyle,
+    singleFoodColor: singleState.foodColor,
     bestScore: singleState.bestScore,
     bestLength: singleState.bestLength,
     gamesPlayed: singleState.gamesPlayed,
@@ -746,6 +781,7 @@ function loadOnlineSession() {
 
 function updateControlsFromState() {
   languageSelect.value = uiState.language;
+  themeSelect.value = uiState.theme;
   viewScaleRange.value = String(uiState.viewScale);
   cellSizeRange.value = String(uiState.cellSize);
   viewScaleLabel.textContent = `${uiState.viewScale}%`;
@@ -764,6 +800,8 @@ function updateControlsFromState() {
   singleSnakeShapeInlineEl.value = singleState.snakeShape;
   singleFoodStyleEl.value = singleState.foodStyle;
   singleFoodStyleInlineEl.value = singleState.foodStyle;
+  singleFoodColorEl.value = singleState.foodColor;
+  singleFoodColorInlineEl.value = singleState.foodColor;
   singleGridColsEl.value = String(singleState.gridCols);
   singleGridRowsEl.value = String(singleState.gridRows);
   singleGridColsInlineEl.value = String(singleState.gridCols);
@@ -1342,7 +1380,7 @@ function drawSingleBoard(now) {
   const rows = singleState.gridRows;
   drawGridBackground(singleCtx, cols, rows, singleCanvas.width, singleCanvas.height);
   const palette = SNAKE_PALETTES[singleState.snakeColor] || SNAKE_PALETTES.neon;
-  drawFood(singleCtx, singleState.food, cols, rows, singleCanvas, singleState.foodStyle, now, "classic");
+  drawFood(singleCtx, singleState.food, cols, rows, singleCanvas, singleState.foodStyle, now, singleState.foodColor);
   drawSnake(singleCtx, singleState.snake, cols, rows, singleCanvas, palette, singleState.snakeShape, singleState.direction);
 }
 
@@ -2015,6 +2053,14 @@ function setupSettingsActions() {
     saveSettings();
   });
 
+  themeSelect.addEventListener("change", () => {
+    uiState.theme = ["default", "aurora", "forest", "sunset", "mono"].includes(themeSelect.value)
+      ? themeSelect.value
+      : "default";
+    applyThemeToDom();
+    saveSettings();
+  });
+
   viewScaleRange.addEventListener("input", () => {
     uiState.viewScale = clamp(intOr(viewScaleRange.value, uiState.viewScale), LIMITS.viewScale.min, LIMITS.viewScale.max);
     viewScaleLabel.textContent = `${uiState.viewScale}%`;
@@ -2089,6 +2135,16 @@ function setupSettingsActions() {
   singleFoodStyleInlineEl.addEventListener("change", () => {
     singleState.foodStyle = normalizeStyle({ foodStyle: singleFoodStyleInlineEl.value }).foodStyle;
     singleFoodStyleEl.value = singleState.foodStyle;
+    saveSettings();
+  });
+  singleFoodColorEl.addEventListener("change", () => {
+    singleState.foodColor = normalizeStyle({ foodColor: singleFoodColorEl.value }).foodColor;
+    singleFoodColorInlineEl.value = singleState.foodColor;
+    saveSettings();
+  });
+  singleFoodColorInlineEl.addEventListener("change", () => {
+    singleState.foodColor = normalizeStyle({ foodColor: singleFoodColorInlineEl.value }).foodColor;
+    singleFoodColorEl.value = singleState.foodColor;
     saveSettings();
   });
   singleGridColsEl.addEventListener("change", () => syncSingleGridSettings("modal"));
