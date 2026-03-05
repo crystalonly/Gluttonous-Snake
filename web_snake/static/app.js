@@ -8,6 +8,11 @@ const LIMITS = {
   cellSize: { min: 14, max: 30 },
 };
 
+const ONLINE_POLL_FAST_MS = 72;
+const ONLINE_POLL_IDLE_MS = 170;
+const ONLINE_INPUT_SEND_GAP_MS = 46;
+const ONLINE_CONFIG_APPLY_DEBOUNCE_MS = 220;
+
 const STORAGE_SETTINGS = "snake_web_settings_v3";
 const STORAGE_ONLINE_SESSION = "snake_web_online_session_v2";
 
@@ -424,6 +429,12 @@ const onlineState = {
   state: null,
   pollingTimer: null,
   requestPending: false,
+  inputTimer: null,
+  inputSending: false,
+  pendingDirection: "",
+  lastInputSentAt: 0,
+  configApplyTimer: null,
+  configApplying: false,
   statusText: "",
   statusError: false,
 };
@@ -782,6 +793,7 @@ function updateControlsFromState() {
   onlineGridRowsPanelEl.value = String(onlinePrefs.gridRows);
   miniMapPositionEl.value = onlinePrefs.miniPosition;
   miniMapPositionPanelEl.value = onlinePrefs.miniPosition;
+  setOnlineRoomConfigEditable();
 }
 
 function applyMiniPositionClass() {
@@ -1532,6 +1544,53 @@ function updateOnlineStaticTexts() {
   applyMiniPositionClass();
 }
 
+function onlineMatchLocked() {
+  if (!onlineState.state) return false;
+  return Boolean(onlineState.state.started || intOr(onlineState.state.countdownMs, 0) > 0);
+}
+
+function onlineRoomConfigEditable() {
+  if (!onlineState.roomCode || !onlineState.token) return true;
+  if (!onlineState.host) return false;
+  return !onlineMatchLocked();
+}
+
+function setOnlineRoomConfigEditable() {
+  const editable = onlineRoomConfigEditable();
+  const controls = [
+    onlineModeQuickEl,
+    onlineDifficultyQuickEl,
+    onlineModeSettingEl,
+    onlineDifficultySettingEl,
+    onlineSpeedEl,
+    onlineGridColsEl,
+    onlineGridRowsEl,
+    onlineModePanelEl,
+    onlineDifficultyPanelEl,
+    onlineSpeedPanelEl,
+    onlineGridColsPanelEl,
+    onlineGridRowsPanelEl,
+    applyOnlineConfigBtn,
+    applyOnlineConfigPanelBtn,
+  ];
+  controls.forEach((el) => {
+    if (el) el.disabled = !editable;
+  });
+  if (startMatchBtn) {
+    startMatchBtn.disabled = Boolean(onlineState.roomCode && onlineState.token && !onlineState.host);
+  }
+}
+
+function syncOnlineConfigFromState(state, firstState) {
+  const shouldUseServerConfig = firstState || !onlineState.host;
+  if (!shouldUseServerConfig) return;
+  onlinePrefs.mode = normalizeMode(state.mode || onlinePrefs.mode);
+  onlinePrefs.difficulty = ["easy", "mixed", "hard"].includes(state.difficulty) ? state.difficulty : onlinePrefs.difficulty;
+  onlinePrefs.speedLevel = clamp(intOr(state.speedLevel, onlinePrefs.speedLevel), LIMITS.speed.min, LIMITS.speed.max);
+  onlinePrefs.gridCols = clamp(intOr(state.gridCols, onlinePrefs.gridCols), LIMITS.cols.min, LIMITS.cols.max);
+  onlinePrefs.gridRows = clamp(intOr(state.gridRows, onlinePrefs.gridRows), LIMITS.rows.min, LIMITS.rows.max);
+}
+
 function updateOnlineResult(state) {
   if (!state.ended) {
     onlineResultBanner.classList.add("hidden");
@@ -1569,15 +1628,13 @@ function updateOnlineCountdown(state) {
 }
 
 function renderOnlineState(state) {
+  const firstState = !onlineState.state;
   onlineState.state = state;
   onlineState.mode = normalizeMode(state.mode || onlineState.mode);
-  onlinePrefs.mode = normalizeMode(state.mode || onlinePrefs.mode);
-  onlinePrefs.difficulty = ["easy", "mixed", "hard"].includes(state.difficulty) ? state.difficulty : onlinePrefs.difficulty;
-  onlinePrefs.speedLevel = clamp(intOr(state.speedLevel, onlinePrefs.speedLevel), LIMITS.speed.min, LIMITS.speed.max);
-  onlinePrefs.gridCols = clamp(intOr(state.gridCols, onlinePrefs.gridCols), LIMITS.cols.min, LIMITS.cols.max);
-  onlinePrefs.gridRows = clamp(intOr(state.gridRows, onlinePrefs.gridRows), LIMITS.rows.min, LIMITS.rows.max);
+  syncOnlineConfigFromState(state, firstState);
   showOnlineBoards(onlineState.mode);
   updateControlsFromState();
+  setOnlineRoomConfigEditable();
   updateOnlineStaticTexts();
 
   const p0 = state.players?.[0]?.name || "P1";
@@ -1624,15 +1681,18 @@ async function pollOnlineState() {
     const message = String(err.message || "");
     if (message.includes("Room not found") || message.includes("Invalid token")) {
       clearOnlineSession();
-      if (onlineState.pollingTimer) {
-        clearInterval(onlineState.pollingTimer);
-        onlineState.pollingTimer = null;
-      }
+      stopOnlinePolling();
       onlineState.roomCode = "";
       onlineState.token = "";
       onlineState.playerIndex = -1;
       onlineState.host = false;
+      onlineState.pendingDirection = "";
+      if (onlineState.inputTimer) {
+        clearTimeout(onlineState.inputTimer);
+        onlineState.inputTimer = null;
+      }
       currentRoomCodeEl.textContent = "-";
+      setOnlineRoomConfigEditable();
     }
     setOnlineStatus(`${t("error_prefix")}: ${err.message}`, true);
   } finally {
@@ -1640,12 +1700,28 @@ async function pollOnlineState() {
   }
 }
 
-function startOnlinePolling() {
-  if (onlineState.pollingTimer) {
-    clearInterval(onlineState.pollingTimer);
+function onlinePollIntervalMs() {
+  if (!onlineState.state) return ONLINE_POLL_IDLE_MS;
+  if (onlineState.state.started || intOr(onlineState.state.countdownMs, 0) > 0) {
+    return ONLINE_POLL_FAST_MS;
   }
-  onlineState.pollingTimer = setInterval(pollOnlineState, 110);
-  pollOnlineState();
+  return ONLINE_POLL_IDLE_MS;
+}
+
+function stopOnlinePolling() {
+  if (!onlineState.pollingTimer) return;
+  clearTimeout(onlineState.pollingTimer);
+  onlineState.pollingTimer = null;
+}
+
+function startOnlinePolling() {
+  stopOnlinePolling();
+  const loop = async () => {
+    await pollOnlineState();
+    if (!onlineState.roomCode || !onlineState.token) return;
+    onlineState.pollingTimer = window.setTimeout(loop, onlinePollIntervalMs());
+  };
+  loop();
 }
 
 function currentOnlineStylePayload() {
@@ -1665,6 +1741,20 @@ function currentOnlineConfigPayload() {
     gridCols: onlinePrefs.gridCols,
     gridRows: onlinePrefs.gridRows,
   };
+}
+
+function scheduleOnlineConfigApply() {
+  updateOnlineStaticTexts();
+  saveSettings();
+  if (!onlineState.roomCode || !onlineState.token || !onlineState.host) return;
+  if (onlineMatchLocked()) return;
+  if (onlineState.configApplyTimer) {
+    clearTimeout(onlineState.configApplyTimer);
+  }
+  onlineState.configApplyTimer = window.setTimeout(() => {
+    onlineState.configApplyTimer = null;
+    applyOnlineConfigToRoom({ silent: true });
+  }, ONLINE_CONFIG_APPLY_DEBOUNCE_MS);
 }
 
 async function handleCreateRoom() {
@@ -1688,6 +1778,7 @@ async function handleCreateRoom() {
     onlineState.playerIndex = data.playerIndex;
     onlineState.host = Boolean(data.host);
     onlineState.mode = normalizeMode(data.mode);
+    setOnlineRoomConfigEditable();
     currentRoomCodeEl.textContent = onlineState.roomCode;
     roomCodeInput.value = onlineState.roomCode;
     if (data.state) renderOnlineState(data.state);
@@ -1719,6 +1810,7 @@ async function handleJoinRoom() {
     onlineState.playerIndex = data.playerIndex;
     onlineState.host = Boolean(data.host);
     onlineState.mode = normalizeMode(data.mode);
+    setOnlineRoomConfigEditable();
     currentRoomCodeEl.textContent = onlineState.roomCode;
     roomCodeInput.value = onlineState.roomCode;
     if (data.state) renderOnlineState(data.state);
@@ -1747,18 +1839,49 @@ async function handleStartMatch() {
   }
 }
 
-async function sendOnlineDirection(directionKey) {
-  if (!onlineState.roomCode || !onlineState.token) return;
+function scheduleOnlineInputFlush(delayMs) {
+  if (onlineState.inputTimer) {
+    clearTimeout(onlineState.inputTimer);
+  }
+  onlineState.inputTimer = window.setTimeout(() => {
+    onlineState.inputTimer = null;
+    flushOnlineInputQueue();
+  }, Math.max(0, delayMs));
+}
+
+async function flushOnlineInputQueue() {
+  if (!onlineState.pendingDirection || !onlineState.roomCode || !onlineState.token) return;
+  if (onlineState.inputSending) return;
+  const now = performance.now();
+  const waitMs = ONLINE_INPUT_SEND_GAP_MS - (now - onlineState.lastInputSentAt);
+  if (waitMs > 0) {
+    scheduleOnlineInputFlush(waitMs);
+    return;
+  }
+  const directionKey = onlineState.pendingDirection;
+  onlineState.pendingDirection = "";
+  onlineState.inputSending = true;
   try {
-    const res = await apiPost("/api/input", {
+    await apiPost("/api/input", {
       roomCode: onlineState.roomCode,
       token: onlineState.token,
       direction: directionKey,
     });
-    renderOnlineState(res.state);
+    onlineState.lastInputSentAt = performance.now();
   } catch (err) {
     setOnlineStatus(`${t("error_prefix")}: ${err.message}`, true);
+  } finally {
+    onlineState.inputSending = false;
+    if (onlineState.pendingDirection) {
+      scheduleOnlineInputFlush(ONLINE_INPUT_SEND_GAP_MS);
+    }
   }
+}
+
+function sendOnlineDirection(directionKey) {
+  if (!onlineState.roomCode || !onlineState.token) return;
+  onlineState.pendingDirection = directionKey;
+  flushOnlineInputQueue();
 }
 
 async function copyInviteLink() {
@@ -1775,14 +1898,21 @@ async function copyInviteLink() {
   }
 }
 
-async function applyOnlineConfigToRoom() {
+async function applyOnlineConfigToRoom(options = {}) {
+  const silent = Boolean(options.silent);
   if (!onlineState.roomCode || !onlineState.token) {
-    setOnlineStatusKey("status_need_room", true);
+    if (!silent) setOnlineStatusKey("status_need_room", true);
     return;
   }
   if (!onlineState.host) {
-    setOnlineStatusKey("status_not_host", true);
+    if (!silent) setOnlineStatusKey("status_not_host", true);
     return;
+  }
+  if (onlineState.configApplying) return;
+  onlineState.configApplying = true;
+  if (onlineState.configApplyTimer) {
+    clearTimeout(onlineState.configApplyTimer);
+    onlineState.configApplyTimer = null;
   }
   try {
     const res = await apiPost("/api/room-config", {
@@ -1791,9 +1921,12 @@ async function applyOnlineConfigToRoom() {
       ...currentOnlineConfigPayload(),
     });
     renderOnlineState(res.state);
-    setOnlineStatusKey("status_config_applied");
+    if (!silent) setOnlineStatusKey("status_config_applied");
   } catch (err) {
-    setOnlineStatus(`${t("error_prefix")}: ${err.message}`, true);
+    if (!silent) setOnlineStatus(`${t("error_prefix")}: ${err.message}`, true);
+  } finally {
+    onlineState.configApplying = false;
+    setOnlineRoomConfigEditable();
   }
 }
 
@@ -1862,7 +1995,7 @@ function syncOnlineGridSettings(source = "modal") {
   onlineGridRowsPanelEl.value = String(nextRows);
   updateOnlineStaticTexts();
   resizeOnlineCanvases();
-  saveSettings();
+  scheduleOnlineConfigApply();
 }
 
 function setupSettingsActions() {
@@ -1975,15 +2108,13 @@ function setupSettingsActions() {
     onlinePrefs.mode = normalizeMode(onlineModeSettingEl.value);
     onlineModeQuickEl.value = onlinePrefs.mode;
     onlineModePanelEl.value = onlinePrefs.mode;
-    updateOnlineStaticTexts();
-    saveSettings();
+    scheduleOnlineConfigApply();
   });
   onlineModePanelEl.addEventListener("change", () => {
     onlinePrefs.mode = normalizeMode(onlineModePanelEl.value);
     onlineModeSettingEl.value = onlinePrefs.mode;
     onlineModeQuickEl.value = onlinePrefs.mode;
-    updateOnlineStaticTexts();
-    saveSettings();
+    scheduleOnlineConfigApply();
   });
   onlineDifficultySettingEl.addEventListener("change", () => {
     onlinePrefs.difficulty = ["easy", "mixed", "hard"].includes(onlineDifficultySettingEl.value)
@@ -1991,7 +2122,7 @@ function setupSettingsActions() {
       : "mixed";
     onlineDifficultyQuickEl.value = onlinePrefs.difficulty;
     onlineDifficultyPanelEl.value = onlinePrefs.difficulty;
-    saveSettings();
+    scheduleOnlineConfigApply();
   });
   onlineDifficultyPanelEl.addEventListener("change", () => {
     onlinePrefs.difficulty = ["easy", "mixed", "hard"].includes(onlineDifficultyPanelEl.value)
@@ -1999,23 +2130,21 @@ function setupSettingsActions() {
       : "mixed";
     onlineDifficultySettingEl.value = onlinePrefs.difficulty;
     onlineDifficultyQuickEl.value = onlinePrefs.difficulty;
-    saveSettings();
+    scheduleOnlineConfigApply();
   });
   onlineSpeedEl.addEventListener("input", () => {
     onlinePrefs.speedLevel = clamp(intOr(onlineSpeedEl.value, onlinePrefs.speedLevel), LIMITS.speed.min, LIMITS.speed.max);
     onlineSpeedLabel.textContent = String(onlinePrefs.speedLevel);
     onlineSpeedPanelEl.value = String(onlinePrefs.speedLevel);
     onlineSpeedPanelLabel.textContent = String(onlinePrefs.speedLevel);
-    updateOnlineStaticTexts();
-    saveSettings();
+    scheduleOnlineConfigApply();
   });
   onlineSpeedPanelEl.addEventListener("input", () => {
     onlinePrefs.speedLevel = clamp(intOr(onlineSpeedPanelEl.value, onlinePrefs.speedLevel), LIMITS.speed.min, LIMITS.speed.max);
     onlineSpeedEl.value = String(onlinePrefs.speedLevel);
     onlineSpeedLabel.textContent = String(onlinePrefs.speedLevel);
     onlineSpeedPanelLabel.textContent = String(onlinePrefs.speedLevel);
-    updateOnlineStaticTexts();
-    saveSettings();
+    scheduleOnlineConfigApply();
   });
   onlineSnakeColorEl.addEventListener("change", () => {
     onlinePrefs.snakeColor = normalizeStyle({ snakeColor: onlineSnakeColorEl.value }).snakeColor;
@@ -2122,8 +2251,7 @@ function setupOnlineActions() {
     onlinePrefs.mode = normalizeMode(onlineModeQuickEl.value);
     onlineModeSettingEl.value = onlinePrefs.mode;
     onlineModePanelEl.value = onlinePrefs.mode;
-    updateOnlineStaticTexts();
-    saveSettings();
+    scheduleOnlineConfigApply();
   });
   onlineDifficultyQuickEl.addEventListener("change", () => {
     onlinePrefs.difficulty = ["easy", "mixed", "hard"].includes(onlineDifficultyQuickEl.value)
@@ -2131,7 +2259,7 @@ function setupOnlineActions() {
       : "mixed";
     onlineDifficultySettingEl.value = onlinePrefs.difficulty;
     onlineDifficultyPanelEl.value = onlinePrefs.difficulty;
-    saveSettings();
+    scheduleOnlineConfigApply();
   });
   createRoomBtn.addEventListener("click", handleCreateRoom);
   joinRoomBtn.addEventListener("click", handleJoinRoom);

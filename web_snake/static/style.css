@@ -270,15 +270,20 @@ canvas {
   border-radius: 10px;
   background: rgba(9, 23, 37, 0.72);
   padding: 9px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
 }
 
 .single-inline-controls .inline-fields {
-  margin-top: 4px;
+  margin-top: 0;
+  grid-column: 1 / -1;
   grid-template-columns: 1fr 1fr;
+  gap: 7px;
 }
 
 .single-inline-controls label {
-  margin-bottom: 7px;
+  margin-bottom: 0;
 }
 
 .btn-row {
@@ -367,6 +372,10 @@ canvas {
 
 .online-room-card {
   padding: 12px 14px;
+}
+
+.online-room-inline {
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
 }
 
 .inline-fields {
@@ -538,6 +547,30 @@ input[type="range"] {
   font-size: 12px;
 }
 
+.online-panel-dpad {
+  display: none;
+  margin-top: 8px;
+  padding: 8px;
+}
+
+.online-panel-dpad .dpad-title {
+  margin-bottom: 7px;
+  font-size: 12px;
+}
+
+.online-panel-dpad .dpad-grid {
+  width: 150px;
+  grid-template-columns: repeat(3, 44px);
+  grid-template-rows: repeat(2, 44px);
+  gap: 9px;
+}
+
+.online-panel-dpad .dpad-key {
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+}
+
 #onlineSpeedPanelLabel {
   display: block;
   margin-top: 4px;
@@ -558,6 +591,10 @@ input[type="range"] {
   display: grid;
   grid-template-columns: minmax(240px, 1fr) 250px;
   gap: 10px;
+}
+
+.online-bottom-dpad {
+  margin-top: 0;
 }
 
 .online-score {
@@ -723,6 +760,79 @@ input[type="range"] {
   }
 }
 
+@media (max-width: 1400px), (max-height: 860px) {
+  .single-layout {
+    grid-template-columns: minmax(0, 1fr) 292px;
+  }
+
+  .board-card,
+  .online-board-card {
+    min-height: 50vh;
+  }
+
+  .online-layout {
+    grid-template-rows: auto minmax(50vh, 1fr) auto;
+  }
+
+  .online-room-card {
+    padding: 10px 12px;
+  }
+
+  .online-room-inline {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .online-room-card .btn-row {
+    margin-top: 8px;
+    gap: 6px;
+  }
+
+  .online-room-card .btn-row button {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .room-meta {
+    margin-top: 8px;
+    gap: 6px 10px;
+    font-size: 12px;
+  }
+
+  .online-status {
+    margin-top: 8px;
+    min-height: 28px;
+    font-size: 12px;
+    padding: 6px 9px;
+  }
+
+  .single-inline-controls .compact-hide {
+    display: none;
+  }
+
+  .online-quick-panel {
+    width: min(246px, 33%);
+    padding: 7px;
+  }
+
+  .online-panel-dpad {
+    display: block;
+  }
+
+  .online-bottom {
+    display: block;
+  }
+
+  .online-bottom-dpad {
+    display: none;
+  }
+
+  .online-score {
+    padding: 8px 12px;
+    font-size: 15px;
+  }
+}
+
 @media (max-width: 1060px) {
   .main {
     overflow: auto;
@@ -737,12 +847,21 @@ input[type="range"] {
     min-height: 56vh;
   }
 
-  .online-bottom {
+  .inline-fields {
     grid-template-columns: 1fr;
   }
 
-  .inline-fields {
+  .single-inline-controls {
     grid-template-columns: 1fr;
+  }
+
+  .single-inline-controls .inline-fields {
+    grid-column: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .online-room-inline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .settings-grid {

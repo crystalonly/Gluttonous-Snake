@@ -92,7 +92,7 @@
                   <option value="invincible" data-i18n="mode_invincible">无敌复活</option>
                 </select>
               </label>
-              <label>
+              <label class="compact-hide">
                 <span data-i18n="snake_color">蛇颜色</span>
                 <select id="singleSnakeColorInline">
                   <option value="neon" data-i18n="snake_color_neon">霓虹青</option>
@@ -101,7 +101,7 @@
                   <option value="glacier" data-i18n="snake_color_glacier">冰川蓝</option>
                 </select>
               </label>
-              <label>
+              <label class="compact-hide">
                 <span data-i18n="snake_shape">蛇形状</span>
                 <select id="singleSnakeShapeInline">
                   <option value="rounded" data-i18n="snake_shape_rounded">圆角块</option>
@@ -110,7 +110,7 @@
                   <option value="diamond" data-i18n="snake_shape_diamond">菱形</option>
                 </select>
               </label>
-              <label>
+              <label class="compact-hide">
                 <span data-i18n="food_style">豆子样式</span>
                 <select id="singleFoodStyleInline">
                   <option value="orb" data-i18n="food_style_orb">光球</option>
@@ -154,7 +154,7 @@
       <section id="tab-online" class="tab-panel">
         <div class="online-layout">
           <div class="online-room-card">
-            <div class="inline-fields">
+            <div class="inline-fields online-room-inline">
               <label>
                 <span data-i18n="player_name">你的昵称</span>
                 <input
@@ -220,84 +220,94 @@
                 <h4 id="miniPlayerLabel">对手小窗</h4>
                 <canvas id="onlineMiniCanvas" width="300" height="220"></canvas>
               </div>
-              <div id="onlineQuickPanel" class="online-quick-panel panel-pos-right">
-                <h4 data-i18n="online_settings">双人设置</h4>
+            </div>
+
+            <div id="onlineQuickPanel" class="online-quick-panel panel-pos-right">
+              <h4 data-i18n="online_settings">双人设置</h4>
+              <label>
+                <span data-i18n="online_mode">模式</span>
+                <select id="onlineModePanel">
+                  <option value="separate" data-i18n="online_mode_separate">模式1: 分屏各吃各的</option>
+                  <option value="arena" data-i18n="online_mode_arena">模式2: 同屏抢同一颗豆子</option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="difficulty">难度</span>
+                <select id="onlineDifficultyPanel">
+                  <option value="easy" data-i18n="difficulty_easy">入门</option>
+                  <option value="mixed" data-i18n="difficulty_mixed">进阶</option>
+                  <option value="hard" data-i18n="difficulty_hard">困难</option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="speed_label">速度</span>
+                <input id="onlineSpeedPanel" type="range" min="1" max="10" value="5" />
+                <strong id="onlineSpeedPanelLabel">5</strong>
+              </label>
+              <label>
+                <span data-i18n="mini_position">小窗位置</span>
+                <select id="miniMapPositionPanel">
+                  <option value="left-top" data-i18n="mini_pos_left_top">左上角</option>
+                  <option value="right-top" data-i18n="mini_pos_right_top">右上角</option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="snake_color">蛇颜色</span>
+                <select id="onlineSnakeColorPanel">
+                  <option value="neon" data-i18n="snake_color_neon">霓虹青</option>
+                  <option value="forest" data-i18n="snake_color_forest">森林绿</option>
+                  <option value="sunset" data-i18n="snake_color_sunset">落日橙</option>
+                  <option value="glacier" data-i18n="snake_color_glacier">冰川蓝</option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="snake_shape">蛇形状</span>
+                <select id="onlineSnakeShapePanel">
+                  <option value="rounded" data-i18n="snake_shape_rounded">圆角块</option>
+                  <option value="square" data-i18n="snake_shape_square">方块</option>
+                  <option value="circle" data-i18n="snake_shape_circle">圆形</option>
+                  <option value="diamond" data-i18n="snake_shape_diamond">菱形</option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="food_style">豆子样式</span>
+                <select id="onlineFoodStylePanel">
+                  <option value="orb" data-i18n="food_style_orb">光球</option>
+                  <option value="crystal" data-i18n="food_style_crystal">水晶</option>
+                  <option value="star" data-i18n="food_style_star">星芒</option>
+                  <option value="ring" data-i18n="food_style_ring">光环</option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="food_color">豆子颜色</span>
+                <select id="onlineFoodColorPanel">
+                  <option value="classic" data-i18n="food_color_classic">经典红</option>
+                  <option value="mint" data-i18n="food_color_mint">薄荷绿</option>
+                  <option value="violet" data-i18n="food_color_violet">紫晶色</option>
+                  <option value="sun" data-i18n="food_color_sun">太阳金</option>
+                </select>
+              </label>
+              <div class="inline-fields">
                 <label>
-                  <span data-i18n="online_mode">模式</span>
-                  <select id="onlineModePanel">
-                    <option value="separate" data-i18n="online_mode_separate">模式1: 分屏各吃各的</option>
-                    <option value="arena" data-i18n="online_mode_arena">模式2: 同屏抢同一颗豆子</option>
-                  </select>
+                  <span data-i18n="grid_cols">列数</span>
+                  <input id="onlineGridColsPanel" type="number" min="16" max="72" step="1" value="32" />
                 </label>
                 <label>
-                  <span data-i18n="difficulty">难度</span>
-                  <select id="onlineDifficultyPanel">
-                    <option value="easy" data-i18n="difficulty_easy">入门</option>
-                    <option value="mixed" data-i18n="difficulty_mixed">进阶</option>
-                    <option value="hard" data-i18n="difficulty_hard">困难</option>
-                  </select>
+                  <span data-i18n="grid_rows">行数</span>
+                  <input id="onlineGridRowsPanel" type="number" min="12" max="48" step="1" value="24" />
                 </label>
-                <label>
-                  <span data-i18n="speed_label">速度</span>
-                  <input id="onlineSpeedPanel" type="range" min="1" max="10" value="5" />
-                  <strong id="onlineSpeedPanelLabel">5</strong>
-                </label>
-                <label>
-                  <span data-i18n="mini_position">小窗位置</span>
-                  <select id="miniMapPositionPanel">
-                    <option value="left-top" data-i18n="mini_pos_left_top">左上角</option>
-                    <option value="right-top" data-i18n="mini_pos_right_top">右上角</option>
-                  </select>
-                </label>
-                <label>
-                  <span data-i18n="snake_color">蛇颜色</span>
-                  <select id="onlineSnakeColorPanel">
-                    <option value="neon" data-i18n="snake_color_neon">霓虹青</option>
-                    <option value="forest" data-i18n="snake_color_forest">森林绿</option>
-                    <option value="sunset" data-i18n="snake_color_sunset">落日橙</option>
-                    <option value="glacier" data-i18n="snake_color_glacier">冰川蓝</option>
-                  </select>
-                </label>
-                <label>
-                  <span data-i18n="snake_shape">蛇形状</span>
-                  <select id="onlineSnakeShapePanel">
-                    <option value="rounded" data-i18n="snake_shape_rounded">圆角块</option>
-                    <option value="square" data-i18n="snake_shape_square">方块</option>
-                    <option value="circle" data-i18n="snake_shape_circle">圆形</option>
-                    <option value="diamond" data-i18n="snake_shape_diamond">菱形</option>
-                  </select>
-                </label>
-                <label>
-                  <span data-i18n="food_style">豆子样式</span>
-                  <select id="onlineFoodStylePanel">
-                    <option value="orb" data-i18n="food_style_orb">光球</option>
-                    <option value="crystal" data-i18n="food_style_crystal">水晶</option>
-                    <option value="star" data-i18n="food_style_star">星芒</option>
-                    <option value="ring" data-i18n="food_style_ring">光环</option>
-                  </select>
-                </label>
-                <label>
-                  <span data-i18n="food_color">豆子颜色</span>
-                  <select id="onlineFoodColorPanel">
-                    <option value="classic" data-i18n="food_color_classic">经典红</option>
-                    <option value="mint" data-i18n="food_color_mint">薄荷绿</option>
-                    <option value="violet" data-i18n="food_color_violet">紫晶色</option>
-                    <option value="sun" data-i18n="food_color_sun">太阳金</option>
-                  </select>
-                </label>
-                <div class="inline-fields">
-                  <label>
-                    <span data-i18n="grid_cols">列数</span>
-                    <input id="onlineGridColsPanel" type="number" min="16" max="72" step="1" value="32" />
-                  </label>
-                  <label>
-                    <span data-i18n="grid_rows">行数</span>
-                    <input id="onlineGridRowsPanel" type="number" min="12" max="48" step="1" value="24" />
-                  </label>
-                </div>
-                <div class="btn-row wrap">
-                  <button id="applyOnlineConfigPanelBtn" data-i18n="apply_room_config">应用房间配置</button>
-                  <button id="applyOnlineStylePanelBtn" data-i18n="apply_style">同步我的样式</button>
+              </div>
+              <div class="btn-row wrap">
+                <button id="applyOnlineConfigPanelBtn" data-i18n="apply_room_config">应用房间配置</button>
+                <button id="applyOnlineStylePanelBtn" data-i18n="apply_style">同步我的样式</button>
+              </div>
+              <div class="dpad-wrap online-panel-dpad">
+                <div class="dpad-title" data-i18n="online_control">双人操作</div>
+                <div class="dpad-grid">
+                  <button data-online-dir="up" class="dpad-key top">↑</button>
+                  <button data-online-dir="left" class="dpad-key left">←</button>
+                  <button data-online-dir="down" class="dpad-key down">↓</button>
+                  <button data-online-dir="right" class="dpad-key right">→</button>
                 </div>
               </div>
             </div>
@@ -315,7 +325,7 @@
 
           <div class="online-bottom">
             <div class="online-score" id="onlineScoreRow">P1 0 : 0 P2</div>
-            <div class="dpad-wrap">
+            <div class="dpad-wrap online-bottom-dpad">
               <div class="dpad-title" data-i18n="online_control">双人操作</div>
               <div class="dpad-grid">
                 <button data-online-dir="up" class="dpad-key top">↑</button>

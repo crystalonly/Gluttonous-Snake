@@ -739,7 +739,7 @@ class RoomHub:
             payload = room.to_payload(token)
         return payload
 
-    def input_direction(self, code: str, token: str, direction_key: str) -> dict[str, Any]:
+    def input_direction(self, code: str, token: str, direction_key: str) -> None:
         normalized = code.strip().upper()
         with self.lock:
             room = self.rooms.get(normalized)
@@ -749,8 +749,7 @@ class RoomHub:
             if viewer < 0:
                 raise ValueError("Invalid token")
             room.set_direction(viewer, direction_key)
-            payload = room.to_payload(token)
-        return payload
+            return
 
     def get_state(self, code: str, token: str) -> dict[str, Any]:
         normalized = code.strip().upper()
@@ -917,8 +916,8 @@ class SnakeRequestHandler(BaseHTTPRequestHandler):
                 room_code = str(payload.get("roomCode", ""))
                 token = str(payload.get("token", ""))
                 direction = str(payload.get("direction", ""))
-                data = HUB.input_direction(room_code, token, direction)
-                self._send_json(HTTPStatus.OK, {"ok": True, "state": data})
+                HUB.input_direction(room_code, token, direction)
+                self._send_json(HTTPStatus.OK, {"ok": True})
                 return
             if parsed.path == "/api/style":
                 room_code = str(payload.get("roomCode", ""))
