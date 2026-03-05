@@ -9,80 +9,68 @@
   <body>
     <div class="page-bg"></div>
     <header class="topbar">
-      <div>
-        <h1>Neon Snake Web</h1>
-        <p>免安装浏览器版: 单人 + 双人在线</p>
+      <div class="brand">
+        <h1 data-i18n="app_title">Neon Snake Web</h1>
+        <p data-i18n="app_subtitle">浏览器免安装版: 单人 + 双人在线</p>
       </div>
       <div class="top-actions">
-        <button class="tab-btn active" data-tab="single">单人模式</button>
-        <button class="tab-btn" data-tab="online">双人在线</button>
+        <button class="tab-btn active" data-tab="single" data-i18n="tab_single">单人模式</button>
+        <button class="tab-btn" data-tab="online" data-i18n="tab_online">双人在线</button>
+        <button id="openSettingsBtn" class="ghost-btn" data-i18n="open_settings">设置</button>
       </div>
     </header>
 
     <main class="main">
       <section id="tab-single" class="tab-panel active">
-        <div class="panel-grid">
-          <div class="game-card">
-            <div class="canvas-stage" id="singleStage">
-              <canvas id="singleCanvas" width="576" height="480"></canvas>
+        <div class="single-layout">
+          <div class="board-card">
+            <div class="board-stage" id="singleStage">
+              <canvas id="singleCanvas" width="672" height="576"></canvas>
               <div id="singleOverlay" class="canvas-overlay hidden">
                 <div class="overlay-title" id="singleOverlayTitle">准备开始</div>
                 <div class="overlay-sub" id="singleOverlaySub">按方向键 / WASD / 点击方向键开始</div>
               </div>
-              <div id="reviveOverlay" class="revive-overlay hidden">
-                <h3>无敌模式: 是否复活?</h3>
-                <p>会复活到更安全的位置。</p>
-                <div class="revive-actions">
-                  <button id="reviveYesBtn">复活继续 (Y)</button>
-                  <button id="reviveNoBtn">结束本局 (N)</button>
+              <div id="reviveOverlay" class="canvas-overlay hidden">
+                <div class="overlay-title" data-i18n="revive_prompt_title">无敌模式: 是否复活?</div>
+                <div class="overlay-sub" data-i18n="revive_prompt_sub">将从更安全的位置继续。</div>
+                <div class="overlay-actions">
+                  <button id="reviveYesBtn" data-i18n="revive_yes">复活继续 (Y)</button>
+                  <button id="reviveNoBtn" data-i18n="revive_no">结束本局 (N)</button>
                 </div>
               </div>
             </div>
           </div>
 
-          <aside class="control-card">
-            <h2>单人设置</h2>
+          <aside class="side-card">
+            <h2 data-i18n="single_panel_title">单人信息</h2>
             <div class="stat-grid">
-              <div><span>Score</span><strong id="singleScore">0</strong></div>
-              <div><span>Best</span><strong id="singleBest">0</strong></div>
-              <div><span>Length</span><strong id="singleLength">4</strong></div>
-              <div><span>Best Length</span><strong id="singleBestLength">4</strong></div>
+              <div>
+                <span data-i18n="score">Score</span>
+                <strong id="singleScore">0</strong>
+              </div>
+              <div>
+                <span data-i18n="best">Best</span>
+                <strong id="singleBest">0</strong>
+              </div>
+              <div>
+                <span data-i18n="length">Length</span>
+                <strong id="singleLength">4</strong>
+              </div>
+              <div>
+                <span data-i18n="best_length">Best Length</span>
+                <strong id="singleBestLength">4</strong>
+              </div>
             </div>
-
-            <label>难度
-              <select id="singleDifficulty">
-                <option value="easy">入门</option>
-                <option value="mixed" selected>进阶</option>
-                <option value="hard">困难</option>
-              </select>
-            </label>
-
-            <label>速度
-              <input id="singleSpeed" type="range" min="1" max="9" value="5" />
-              <span id="singleSpeedLabel">5</span>
-            </label>
-
-            <label>画面缩放
-              <input id="singleScale" type="range" min="80" max="150" step="5" value="100" />
-              <span id="singleScaleLabel">100%</span>
-            </label>
-
-            <label>模式
-              <select id="singleMode">
-                <option value="normal" selected>普通</option>
-                <option value="invincible">无敌复活</option>
-              </select>
-            </label>
-
+            <div class="meta-row" id="singleMetaRow">-</div>
             <div class="btn-row">
-              <button id="singleStartBtn">开始/继续</button>
-              <button id="singlePauseBtn">暂停</button>
-              <button id="singleRestartBtn">重开</button>
+              <button id="singleStartBtn" data-i18n="start_or_resume">开始/继续</button>
+              <button id="singlePauseBtn" data-i18n="pause">暂停</button>
+              <button id="singleRestartBtn" data-i18n="restart">重开</button>
             </div>
 
             <div class="dpad-wrap">
-              <div class="dpad-title">鼠标操作</div>
-              <div class="dpad">
+              <div class="dpad-title" data-i18n="mouse_control">鼠标方向键</div>
+              <div class="dpad-grid">
                 <button data-single-dir="up" class="dpad-key top">↑</button>
                 <button data-single-dir="left" class="dpad-key left">←</button>
                 <button data-single-dir="down" class="dpad-key down">↓</button>
@@ -90,81 +78,239 @@
               </div>
             </div>
 
-            <p class="hint">键盘: WASD / 方向键, 空格暂停, R 重开, Y/N 复活确认</p>
+            <p class="hint" id="singleHint"></p>
           </aside>
         </div>
       </section>
 
       <section id="tab-online" class="tab-panel">
-        <div class="online-top">
-          <div class="online-card">
-            <h2>创建房间</h2>
-            <label>你的昵称
-              <input id="playerNameInput" type="text" maxlength="14" placeholder="Player 1" />
-            </label>
-            <label>双人模式
-              <select id="onlineMode">
-                <option value="separate" selected>模式1: 分屏各吃各的</option>
-                <option value="arena">模式2: 同屏抢同一颗豆子</option>
-              </select>
-            </label>
-            <button id="createRoomBtn">创建房间</button>
+        <div class="online-layout">
+          <div class="online-room-card">
+            <div class="inline-fields">
+              <label>
+                <span data-i18n="player_name">你的昵称</span>
+                <input
+                  id="playerNameInput"
+                  type="text"
+                  maxlength="14"
+                  placeholder="Player"
+                  data-i18n-placeholder="player_name_ph"
+                />
+              </label>
+              <label>
+                <span data-i18n="room_code">房间号</span>
+                <input
+                  id="roomCodeInput"
+                  type="text"
+                  maxlength="6"
+                  placeholder="输入 6 位房间号"
+                  data-i18n-placeholder="room_code_ph"
+                />
+              </label>
+            </div>
+
+            <div class="btn-row wrap">
+              <button id="createRoomBtn" data-i18n="create_room">创建房间</button>
+              <button id="joinRoomBtn" data-i18n="join_room">加入房间</button>
+              <button id="startMatchBtn" data-i18n="start_match">开始对战(房主)</button>
+              <button id="copyInviteBtn" data-i18n="copy_invite">复制邀请链接</button>
+            </div>
+
+            <div class="room-meta">
+              <div><span data-i18n="current_room">当前房间</span>: <strong id="currentRoomCode">-</strong></div>
+              <div><span data-i18n="online_mode">模式</span>: <strong id="onlineModeTag">-</strong></div>
+              <div><span data-i18n="speed_label">速度</span>: <strong id="onlineSpeedTag">5</strong></div>
+              <div><span data-i18n="grid_size">网格</span>: <strong id="onlineGridTag">28 x 24</strong></div>
+            </div>
+            <div class="online-status" id="onlineStatus">未连接房间</div>
           </div>
 
-          <div class="online-card">
-            <h2>加入房间</h2>
-            <label>房间号
-              <input id="roomCodeInput" type="text" maxlength="6" placeholder="输入 6 位房间号" />
-            </label>
-            <label>画面缩放
-              <input id="onlineScale" type="range" min="80" max="150" step="5" value="100" />
-              <span id="onlineScaleLabel">100%</span>
-            </label>
-            <button id="joinRoomBtn">加入房间</button>
-            <div class="room-info">
-              <div>当前房间: <strong id="currentRoomCode">-</strong></div>
-              <button id="copyInviteBtn">复制邀请链接</button>
-              <button id="startMatchBtn">开始对战(房主)</button>
+          <div class="online-board-card">
+            <canvas id="onlineArenaCanvas" width="720" height="560" class="hidden"></canvas>
+
+            <div id="onlineSplitWrap" class="split-wrap hidden">
+              <div class="split-board">
+                <h3 id="leftPlayerLabel">左侧玩家</h3>
+                <canvas id="onlineLeftCanvas" width="560" height="460"></canvas>
+              </div>
+              <div class="split-board">
+                <h3 id="rightPlayerLabel">右侧玩家</h3>
+                <canvas id="onlineRightCanvas" width="560" height="460"></canvas>
+              </div>
+            </div>
+
+            <div id="onlineResultBanner" class="result-banner hidden">
+              <div class="result-emoji" id="resultEmoji">😄🎉</div>
+              <div id="resultText">等待结果</div>
             </div>
           </div>
-        </div>
 
-        <div class="online-status" id="onlineStatus">未连接房间</div>
-
-        <div class="online-board-card">
-          <canvas id="onlineArenaCanvas" width="576" height="480" class="hidden"></canvas>
-
-          <div id="onlineSplitWrap" class="split-wrap hidden">
-            <div class="split-board">
-              <h3 id="leftPlayerLabel">左侧玩家</h3>
-              <canvas id="onlineLeftCanvas" width="480" height="400"></canvas>
-            </div>
-            <div class="split-board">
-              <h3 id="rightPlayerLabel">右侧玩家</h3>
-              <canvas id="onlineRightCanvas" width="480" height="400"></canvas>
-            </div>
-          </div>
-
-          <div id="onlineResultBanner" class="result-banner hidden">
-            <div class="result-emoji" id="resultEmoji">😄🎉</div>
-            <div id="resultText">等待结果</div>
-          </div>
-        </div>
-
-        <div class="online-footer">
-          <div class="online-score" id="onlineScoreRow">P1 0 : 0 P2</div>
-          <div class="dpad-wrap">
-            <div class="dpad-title">双人操控</div>
-            <div class="dpad">
-              <button data-online-dir="up" class="dpad-key top">↑</button>
-              <button data-online-dir="left" class="dpad-key left">←</button>
-              <button data-online-dir="down" class="dpad-key down">↓</button>
-              <button data-online-dir="right" class="dpad-key right">→</button>
+          <div class="online-bottom">
+            <div class="online-score" id="onlineScoreRow">P1 0 : 0 P2</div>
+            <div class="dpad-wrap">
+              <div class="dpad-title" data-i18n="online_control">双人操作</div>
+              <div class="dpad-grid">
+                <button data-online-dir="up" class="dpad-key top">↑</button>
+                <button data-online-dir="left" class="dpad-key left">←</button>
+                <button data-online-dir="down" class="dpad-key down">↓</button>
+                <button data-online-dir="right" class="dpad-key right">→</button>
+              </div>
             </div>
           </div>
         </div>
       </section>
     </main>
+
+    <div id="settingsModal" class="settings-modal hidden">
+      <div class="settings-dialog">
+        <div class="settings-head">
+          <h2 data-i18n="settings_title">游戏设置</h2>
+          <button id="closeSettingsBtn" class="close-btn" aria-label="Close">×</button>
+        </div>
+        <div class="settings-grid">
+          <section class="settings-section">
+            <h3 data-i18n="global_settings">全局显示</h3>
+            <label>
+              <span data-i18n="language">语言</span>
+              <select id="languageSelect">
+                <option value="zh" data-i18n="lang_zh">中文</option>
+                <option value="en" data-i18n="lang_en">English</option>
+                <option value="ja" data-i18n="lang_ja">日本語</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="view_scale">画面缩放</span>
+              <input id="viewScaleRange" type="range" min="70" max="140" step="5" value="100" />
+              <span id="viewScaleLabel">100%</span>
+            </label>
+            <label>
+              <span data-i18n="cell_size">格子大小</span>
+              <input id="cellSizeRange" type="range" min="14" max="30" step="1" value="24" />
+              <span id="cellSizeLabel">24px</span>
+            </label>
+          </section>
+
+          <section class="settings-section">
+            <h3 data-i18n="single_settings">单人设置</h3>
+            <label>
+              <span data-i18n="difficulty">难度</span>
+              <select id="singleDifficulty">
+                <option value="easy" data-i18n="difficulty_easy">入门</option>
+                <option value="mixed" data-i18n="difficulty_mixed">进阶</option>
+                <option value="hard" data-i18n="difficulty_hard">困难</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="speed_label">速度</span>
+              <input id="singleSpeed" type="range" min="1" max="10" value="5" />
+              <span id="singleSpeedLabel">5</span>
+            </label>
+            <label>
+              <span data-i18n="single_mode">模式</span>
+              <select id="singleMode">
+                <option value="normal" data-i18n="mode_normal">普通</option>
+                <option value="invincible" data-i18n="mode_invincible">无敌复活</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="snake_color">蛇颜色</span>
+              <select id="singleSnakeColor">
+                <option value="neon" data-i18n="snake_color_neon">霓虹青</option>
+                <option value="forest" data-i18n="snake_color_forest">森林绿</option>
+                <option value="sunset" data-i18n="snake_color_sunset">落日橙</option>
+                <option value="glacier" data-i18n="snake_color_glacier">冰川蓝</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="snake_shape">蛇形状</span>
+              <select id="singleSnakeShape">
+                <option value="rounded" data-i18n="snake_shape_rounded">圆角块</option>
+                <option value="square" data-i18n="snake_shape_square">方块</option>
+                <option value="circle" data-i18n="snake_shape_circle">圆形</option>
+                <option value="diamond" data-i18n="snake_shape_diamond">菱形</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="food_style">豆子样式</span>
+              <select id="singleFoodStyle">
+                <option value="orb" data-i18n="food_style_orb">光球</option>
+                <option value="crystal" data-i18n="food_style_crystal">水晶</option>
+                <option value="star" data-i18n="food_style_star">星芒</option>
+                <option value="ring" data-i18n="food_style_ring">光环</option>
+              </select>
+            </label>
+            <div class="inline-fields">
+              <label>
+                <span data-i18n="grid_cols">列数</span>
+                <input id="singleGridCols" type="number" min="16" max="72" step="1" value="28" />
+              </label>
+              <label>
+                <span data-i18n="grid_rows">行数</span>
+                <input id="singleGridRows" type="number" min="12" max="48" step="1" value="24" />
+              </label>
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <h3 data-i18n="online_settings">双人设置</h3>
+            <label>
+              <span data-i18n="online_mode">模式</span>
+              <select id="onlineModeSetting">
+                <option value="separate" data-i18n="online_mode_separate">模式1: 分屏各吃各的</option>
+                <option value="arena" data-i18n="online_mode_arena">模式2: 同屏抢同一颗豆子</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="speed_label">速度</span>
+              <input id="onlineSpeed" type="range" min="1" max="10" value="5" />
+              <span id="onlineSpeedLabel">5</span>
+            </label>
+            <label>
+              <span data-i18n="snake_color">蛇颜色</span>
+              <select id="onlineSnakeColor">
+                <option value="neon" data-i18n="snake_color_neon">霓虹青</option>
+                <option value="forest" data-i18n="snake_color_forest">森林绿</option>
+                <option value="sunset" data-i18n="snake_color_sunset">落日橙</option>
+                <option value="glacier" data-i18n="snake_color_glacier">冰川蓝</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="snake_shape">蛇形状</span>
+              <select id="onlineSnakeShape">
+                <option value="rounded" data-i18n="snake_shape_rounded">圆角块</option>
+                <option value="square" data-i18n="snake_shape_square">方块</option>
+                <option value="circle" data-i18n="snake_shape_circle">圆形</option>
+                <option value="diamond" data-i18n="snake_shape_diamond">菱形</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="food_style">豆子样式</span>
+              <select id="onlineFoodStyle">
+                <option value="orb" data-i18n="food_style_orb">光球</option>
+                <option value="crystal" data-i18n="food_style_crystal">水晶</option>
+                <option value="star" data-i18n="food_style_star">星芒</option>
+                <option value="ring" data-i18n="food_style_ring">光环</option>
+              </select>
+            </label>
+            <div class="inline-fields">
+              <label>
+                <span data-i18n="grid_cols">列数</span>
+                <input id="onlineGridCols" type="number" min="16" max="72" step="1" value="32" />
+              </label>
+              <label>
+                <span data-i18n="grid_rows">行数</span>
+                <input id="onlineGridRows" type="number" min="12" max="48" step="1" value="24" />
+              </label>
+            </div>
+            <div class="btn-row wrap">
+              <button id="applyOnlineConfigBtn" data-i18n="apply_room_config">应用房间配置</button>
+              <button id="applyOnlineStyleBtn" data-i18n="apply_style">同步我的样式</button>
+            </div>
+            <p id="onlineConfigHint" class="hint"></p>
+          </section>
+        </div>
+      </div>
+    </div>
 
     <script src="./app.js"></script>
   </body>
