@@ -1208,7 +1208,14 @@ class SnakeGame(QWidget):
             self._t("game_title"),
         )
 
+        content_left = self.panel_x + 16
+        content_right = self.panel_x + self.panel_width - 16
+        label_width = 104
+        value_left = content_left + label_width + 6
+        value_width = max(44.0, content_right - value_left)
+
         difficulty_name = self._t("difficulty_" + self.difficulty)
+        last_value = f"{self.last_score}/{self.last_length}" if self.games_played > 0 else "0/0"
         stats = [
             (self._t("score"), str(self.score)),
             (self._t("best_score"), str(self.best_score)),
@@ -1216,33 +1223,33 @@ class SnakeGame(QWidget):
             (self._t("best_length"), str(self.best_length)),
             (self._t("difficulty"), difficulty_name),
             (self._t("games"), str(self.games_played)),
-            (self._t("last"), f"{self.last_score}/{self.last_length}"),
+            (self._t("last"), last_value),
         ]
 
-        title_font = QFont("Avenir Next", 11, QFont.Bold)
-        value_font = QFont("Avenir Next", 16, QFont.Bold)
+        title_font = QFont("Avenir Next", 10, QFont.Bold)
+        value_font = QFont("Avenir Next", 14, QFont.Bold)
         y = self.panel_y + 72
 
         for label, value in stats:
             painter.setFont(title_font)
             painter.setPen(QColor("#9CC6D8"))
             painter.drawText(
-                QRectF(self.panel_x + 24, y, 126, 28),
+                QRectF(content_left, y, label_width, 28),
                 Qt.AlignLeft | Qt.AlignVCenter,
                 label,
             )
             painter.setFont(value_font)
             painter.setPen(QColor("#E6FAFF"))
             painter.drawText(
-                QRectF(self.panel_x + 138, y - 1, self.panel_width - 46, 30),
+                QRectF(value_left, y - 1, value_width, 30),
                 Qt.AlignRight | Qt.AlignVCenter,
                 value,
             )
             y += 36
 
-        button_x = self.panel_x + 24
-        button_w = self.panel_width - 48
-        button_y = self.panel_y + 336
+        button_x = content_left
+        button_w = content_right - content_left
+        button_y = self.panel_y + 318
 
         if self.state == "running":
             primary_label = self._t("pause")
@@ -1294,15 +1301,15 @@ class SnakeGame(QWidget):
         painter.setFont(QFont("Avenir Next", 11, QFont.DemiBold))
         painter.setPen(QColor("#9CC6D8"))
         painter.drawText(
-            QRectF(button_x, button_y + 162, button_w, 22),
+            QRectF(button_x, button_y + 160, button_w, 22),
             Qt.AlignCenter,
             self._t("controls"),
         )
 
-        pad_size = 32
+        pad_size = 26
         pad_gap = 6
         pad_center_x = button_x + button_w / 2
-        pad_top = button_y + 188
+        pad_top = button_y + 172
         up_rect = QRectF(pad_center_x - pad_size / 2, pad_top, pad_size, pad_size)
         left_rect = QRectF(
             pad_center_x - pad_size - pad_gap,
@@ -1330,13 +1337,14 @@ class SnakeGame(QWidget):
 
         painter.setFont(QFont("Avenir Next", 9))
         painter.setPen(QColor("#88B6CB"))
+        hint_y = self.panel_y + self.panel_height - 40
         painter.drawText(
-            QRectF(button_x, self.panel_y + self.panel_height - 44, button_w, 18),
+            QRectF(button_x, hint_y, button_w, 18),
             Qt.AlignCenter,
             self._t("mouse_hint"),
         )
         painter.drawText(
-            QRectF(button_x, self.panel_y + self.panel_height - 24, button_w, 18),
+            QRectF(button_x, hint_y + 18, button_w, 18),
             Qt.AlignCenter,
             self._t("keys_hint"),
         )
@@ -1345,8 +1353,20 @@ class SnakeGame(QWidget):
         if now > self.effect_until:
             return
         ratio = (self.effect_until - now) / 0.12
-        color = QColor(255, 255, 255, int(70 * ratio))
-        painter.fillRect(self._board_rect(), color)
+        board_rect = self._board_rect()
+
+        center = self._food_center()
+        glow_radius = self.cell_size * (1.8 + ratio * 1.1)
+        glow = QRadialGradient(center, glow_radius)
+        glow.setColorAt(0, QColor(147, 220, 236, int(62 * ratio)))
+        glow.setColorAt(1, QColor(147, 220, 236, 0))
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(glow)
+        painter.drawEllipse(center, glow_radius, glow_radius)
+
+        painter.setPen(QPen(QColor(128, 206, 224, int(40 * ratio)), 1.5))
+        painter.setBrush(Qt.NoBrush)
+        painter.drawRoundedRect(board_rect.adjusted(1.5, 1.5, -1.5, -1.5), 12, 12)
 
     def _draw_overlay(self, painter: QPainter) -> None:
         if self.state == "running" or self.settings_open:
