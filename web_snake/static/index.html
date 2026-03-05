@@ -62,6 +62,20 @@
               </div>
             </div>
             <div class="meta-row" id="singleMetaRow">-</div>
+            <div class="single-quick-card">
+              <label>
+                <span data-i18n="speed_label">速度</span>
+                <input id="singleSpeedInline" type="range" min="1" max="10" value="5" />
+              </label>
+              <div class="quick-speed-row">
+                <strong id="singleSpeedInlineValue">5</strong>
+              </div>
+              <div class="quick-tags">
+                <span id="singleDifficultyTag">进阶</span>
+                <span id="singleModeTag">普通</span>
+                <span id="singleGridTag">28 x 24</span>
+              </div>
+            </div>
             <div class="btn-row">
               <button id="singleStartBtn" data-i18n="start_or_resume">开始/继续</button>
               <button id="singlePauseBtn" data-i18n="pause">暂停</button>
@@ -107,6 +121,21 @@
                   data-i18n-placeholder="room_code_ph"
                 />
               </label>
+              <label>
+                <span data-i18n="online_mode">模式</span>
+                <select id="onlineModeQuick">
+                  <option value="separate" data-i18n="online_mode_separate">模式1: 分屏各吃各的</option>
+                  <option value="arena" data-i18n="online_mode_arena">模式2: 同屏抢同一颗豆子</option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="difficulty">难度</span>
+                <select id="onlineDifficultyQuick">
+                  <option value="easy" data-i18n="difficulty_easy">入门</option>
+                  <option value="mixed" data-i18n="difficulty_mixed">进阶</option>
+                  <option value="hard" data-i18n="difficulty_hard">困难</option>
+                </select>
+              </label>
             </div>
 
             <div class="btn-row wrap">
@@ -128,20 +157,25 @@
           <div class="online-board-card">
             <canvas id="onlineArenaCanvas" width="720" height="560" class="hidden"></canvas>
 
-            <div id="onlineSplitWrap" class="split-wrap hidden">
-              <div class="split-board">
-                <h3 id="leftPlayerLabel">左侧玩家</h3>
-                <canvas id="onlineLeftCanvas" width="560" height="460"></canvas>
+            <div id="onlineSeparateWrap" class="separate-wrap hidden">
+              <div class="separate-main">
+                <h3 id="mainPlayerLabel">主视角</h3>
+                <canvas id="onlineMainCanvas" width="680" height="520"></canvas>
               </div>
-              <div class="split-board">
-                <h3 id="rightPlayerLabel">右侧玩家</h3>
-                <canvas id="onlineRightCanvas" width="560" height="460"></canvas>
+              <div id="onlineMiniWrap" class="separate-mini mini-pos-right-top">
+                <h4 id="miniPlayerLabel">对手小窗</h4>
+                <canvas id="onlineMiniCanvas" width="300" height="220"></canvas>
               </div>
             </div>
 
             <div id="onlineResultBanner" class="result-banner hidden">
               <div class="result-emoji" id="resultEmoji">😄🎉</div>
               <div id="resultText">等待结果</div>
+            </div>
+
+            <div id="onlineCountdownBanner" class="countdown-banner hidden">
+              <div data-i18n="countdown_title">对战即将开始</div>
+              <strong id="onlineCountdownValue">3</strong>
             </div>
           </div>
 
@@ -261,9 +295,24 @@
               </select>
             </label>
             <label>
+              <span data-i18n="mini_position">小窗位置</span>
+              <select id="miniMapPosition">
+                <option value="right-top" data-i18n="mini_pos_right_top">右上角</option>
+                <option value="left-top" data-i18n="mini_pos_left_top">左上角</option>
+              </select>
+            </label>
+            <label>
               <span data-i18n="speed_label">速度</span>
               <input id="onlineSpeed" type="range" min="1" max="10" value="5" />
               <span id="onlineSpeedLabel">5</span>
+            </label>
+            <label>
+              <span data-i18n="difficulty">难度</span>
+              <select id="onlineDifficultySetting">
+                <option value="easy" data-i18n="difficulty_easy">入门</option>
+                <option value="mixed" data-i18n="difficulty_mixed">进阶</option>
+                <option value="hard" data-i18n="difficulty_hard">困难</option>
+              </select>
             </label>
             <label>
               <span data-i18n="snake_color">蛇颜色</span>
@@ -290,6 +339,15 @@
                 <option value="crystal" data-i18n="food_style_crystal">水晶</option>
                 <option value="star" data-i18n="food_style_star">星芒</option>
                 <option value="ring" data-i18n="food_style_ring">光环</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="food_color">豆子颜色</span>
+              <select id="onlineFoodColor">
+                <option value="classic" data-i18n="food_color_classic">经典红</option>
+                <option value="mint" data-i18n="food_color_mint">薄荷绿</option>
+                <option value="violet" data-i18n="food_color_violet">紫晶色</option>
+                <option value="sun" data-i18n="food_color_sun">太阳金</option>
               </select>
             </label>
             <div class="inline-fields">

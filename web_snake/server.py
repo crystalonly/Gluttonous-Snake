@@ -25,6 +25,7 @@ MAX_GRID_ROWS = 48
 DEFAULT_SPEED_LEVEL = 5
 MIN_SPEED_LEVEL = 1
 MAX_SPEED_LEVEL = 10
+DEFAULT_DIFFICULTY = "mixed"
 ROOM_TIMEOUT_SEC = 6 * 60 * 60
 ENDED_ROOM_TIMEOUT_SEC = 60 * 60
 STATIC_DIR = Path(__file__).with_name("static")
@@ -32,9 +33,12 @@ STATIC_DIR = Path(__file__).with_name("static")
 DEFAULT_SNAKE_COLOR = "neon"
 DEFAULT_SNAKE_SHAPE = "rounded"
 DEFAULT_FOOD_STYLE = "orb"
+DEFAULT_FOOD_COLOR = "classic"
 SNAKE_COLOR_STYLES = {"neon", "forest", "sunset", "glacier"}
 SNAKE_SHAPE_STYLES = {"rounded", "square", "circle", "diamond"}
 FOOD_STYLES = {"orb", "crystal", "star", "ring"}
+FOOD_COLOR_STYLES = {"classic", "mint", "violet", "sun"}
+DIFFICULTY_LEVELS = {"easy", "mixed", "hard"}
 
 DIRECTION_MAP: dict[str, tuple[int, int]] = {
     "up": (0, -1),
@@ -75,21 +79,32 @@ def _normalize_mode(raw: Any, fallback: str = "separate") -> str:
     return fallback
 
 
+def _normalize_difficulty(raw: Any, fallback: str = DEFAULT_DIFFICULTY) -> str:
+    text = str(raw or "").strip().lower()
+    if text in DIFFICULTY_LEVELS:
+        return text
+    return fallback
+
+
 def _normalize_style(raw: Any) -> dict[str, str]:
     style = raw if isinstance(raw, dict) else {}
     snake_color = str(style.get("snakeColor", "")).strip().lower()
     snake_shape = str(style.get("snakeShape", "")).strip().lower()
     food_style = str(style.get("foodStyle", "")).strip().lower()
+    food_color = str(style.get("foodColor", "")).strip().lower()
     if snake_color not in SNAKE_COLOR_STYLES:
         snake_color = DEFAULT_SNAKE_COLOR
     if snake_shape not in SNAKE_SHAPE_STYLES:
         snake_shape = DEFAULT_SNAKE_SHAPE
     if food_style not in FOOD_STYLES:
         food_style = DEFAULT_FOOD_STYLE
+    if food_color not in FOOD_COLOR_STYLES:
+        food_color = DEFAULT_FOOD_COLOR
     return {
         "snakeColor": snake_color,
         "snakeShape": snake_shape,
         "foodStyle": food_style,
+        "foodColor": food_color,
     }
 
 
@@ -97,6 +112,10 @@ def _food_from_empty(
     width: int,
     height: int,
     occupied: set[tuple[int, int]],
+    *,
+    difficulty: str = DEFAULT_DIFFICULTY,
+    avoid_corner: bool = False,
+    head: tuple[int, int] | None = None,
 ) -> tuple[int, int]:
     empty: list[tuple[int, int]] = []
     for y in range(height):
@@ -106,7 +125,46 @@ def _food_from_empty(
                 empty.append(cell)
     if not empty:
         return (max(0, width // 2), max(0, height // 2))
-    return random.choice(empty)
+
+    if avoid_corner:
+        corner_filtered = [
+            cell
+            for cell in empty
+            if not (
+                (cell[0] == 0 or cell[0] == width - 1)
+                and (cell[1] == 0 or cell[1] == height - 1)
+            )
+        ]
+        if corner_filtered:
+            empty = corner_filtered
+
+    if head is None:
+        head = (width // 2, height // 2)
+    hx, hy = head
+
+    def score_cell(cell: tuple[int, int]) -> float:
+        x, y = cell
+        wall_distance = min(x, width - 1 - x, y, height - 1 - y)
+        head_distance = abs(hx - x) + abs(hy - y)
+        open_count = 0
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx = x + dx
+            ny = y + dy
+            if 0 <= nx < width and 0 <= ny < height and (nx, ny) not in occupied:
+                open_count += 1
+        if difficulty == "easy":
+            return wall_distance * 2.8 + open_count * 2.1 + head_distance * 0.22
+        if difficulty == "hard":
+            return (3.6 - wall_distance) * 2.0 + (4.2 - open_count) * 1.6 + head_distance * 0.06
+        return random.random() * 12 + wall_distance * 0.8 + open_count * 0.7
+
+    if difficulty == "mixed":
+        return random.choice(empty)
+
+    scored = [(score_cell(cell), cell) for cell in empty]
+    scored.sort(key=lambda item: item[0], reverse=True)
+    top_count = max(1, int(len(scored) * (0.22 if difficulty == "hard" else 0.35)))
+    return random.choice([cell for _, cell in scored[:top_count]])
 
 
 def _snake_to_json(snake: list[tuple[int, int]]) -> list[list[int]]:
@@ -134,6 +192,7 @@ class Room:
     grid_cols: int
     grid_rows: int
     speed_level: int
+    difficulty: str
     created_at: float = field(default_factory=time.time)
     updated_at: float = field(default_factory=time.time)
     players: list[dict[str, Any]] = field(default_factory=list)
@@ -148,6 +207,7 @@ class Room:
     alive: list[bool] = field(default_factory=list)
     foods: tuple[int, int] | list[tuple[int, int]] | None = None
     tick_interval: float = field(default=0.14)
+    countdown_until: float = field(default=0.0)
     last_tick: float = field(default_factory=time.monotonic)
 
     def __post_init__(self) -> None:
@@ -155,6 +215,7 @@ class Room:
         self.grid_cols = _as_int(self.grid_cols, DEFAULT_GRID_COLS, MIN_GRID_COLS, MAX_GRID_COLS)
         self.grid_rows = _as_int(self.grid_rows, DEFAULT_GRID_ROWS, MIN_GRID_ROWS, MAX_GRID_ROWS)
         self.speed_level = _as_int(self.speed_level, DEFAULT_SPEED_LEVEL, MIN_SPEED_LEVEL, MAX_SPEED_LEVEL)
+        self.difficulty = _normalize_difficulty(self.difficulty, DEFAULT_DIFFICULTY)
         self.tick_interval = _speed_to_interval(self.speed_level)
 
     def add_player(self, name: str, style: dict[str, str]) -> tuple[str, int]:
@@ -211,16 +272,40 @@ class Room:
         self.alive = [True, True]
         if self.mode == "arena":
             occupied = set(self.snakes[0]) | set(self.snakes[1])
-            self.foods = _food_from_empty(self.grid_cols, self.grid_rows, occupied)
+            heads = [self.snakes[0][0], self.snakes[1][0]]
+            avg_head = ((heads[0][0] + heads[1][0]) // 2, (heads[0][1] + heads[1][1]) // 2)
+            self.foods = _food_from_empty(
+                self.grid_cols,
+                self.grid_rows,
+                occupied,
+                difficulty=self.difficulty,
+                avoid_corner=True,
+                head=avg_head,
+            )
         else:
             self.foods = [
-                _food_from_empty(self.grid_cols, self.grid_rows, set(self.snakes[0])),
-                _food_from_empty(self.grid_cols, self.grid_rows, set(self.snakes[1])),
+                _food_from_empty(
+                    self.grid_cols,
+                    self.grid_rows,
+                    set(self.snakes[0]),
+                    difficulty=self.difficulty,
+                    avoid_corner=True,
+                    head=self.snakes[0][0],
+                ),
+                _food_from_empty(
+                    self.grid_cols,
+                    self.grid_rows,
+                    set(self.snakes[1]),
+                    difficulty=self.difficulty,
+                    avoid_corner=True,
+                    head=self.snakes[1][0],
+                ),
             ]
         self.started = False
         self.ended = False
         self.winner = None
         self.message = "Ready to start"
+        self.countdown_until = 0.0
         self.last_tick = time.monotonic()
         self.updated_at = time.time()
 
@@ -258,10 +343,11 @@ class Room:
         grid_cols: int | None = None,
         grid_rows: int | None = None,
         speed_level: int | None = None,
+        difficulty: str | None = None,
     ) -> None:
         if player_index != 0:
             raise ValueError("Only host can update room config")
-        if self.started:
+        if self.started or self.countdown_until > 0:
             raise ValueError("Cannot change config while match is running")
 
         next_mode = self.mode if mode is None else _normalize_mode(mode, self.mode)
@@ -273,17 +359,20 @@ class Room:
             MIN_SPEED_LEVEL,
             MAX_SPEED_LEVEL,
         )
+        next_difficulty = self.difficulty if difficulty is None else _normalize_difficulty(difficulty, self.difficulty)
 
         changed = (
             next_mode != self.mode
             or next_cols != self.grid_cols
             or next_rows != self.grid_rows
             or next_speed != self.speed_level
+            or next_difficulty != self.difficulty
         )
         self.mode = next_mode
         self.grid_cols = next_cols
         self.grid_rows = next_rows
         self.speed_level = next_speed
+        self.difficulty = next_difficulty
         self.tick_interval = _speed_to_interval(next_speed)
         if changed and len(self.players) == 2:
             self._prepare_match_data()
@@ -293,13 +382,30 @@ class Room:
         if len(self.players) < 2:
             raise ValueError("Need two players to start")
         self._prepare_match_data()
-        self.started = True
-        self.message = "Match running"
-        self.last_tick = time.monotonic()
+        now = time.monotonic()
+        self.started = False
+        self.countdown_until = now + 3.0
+        self.message = "Countdown"
+        self.last_tick = now
         self.updated_at = time.time()
 
     def tick(self, now: float) -> None:
-        if not self.started or self.ended or len(self.players) < 2:
+        if self.ended or len(self.players) < 2:
+            return
+
+        if not self.started:
+            if self.countdown_until > 0:
+                if now < self.countdown_until:
+                    return
+                self.countdown_until = 0.0
+                self.started = True
+                self.message = "Match running"
+                self.last_tick = now
+                self.updated_at = time.time()
+            else:
+                return
+
+        if not self.started:
             return
         elapsed = now - self.last_tick
         if elapsed < self.tick_interval:
@@ -343,7 +449,14 @@ class Room:
             self.snakes[idx].insert(0, next_head)
             if grow:
                 self.scores[idx] += 1
-                foods[idx] = _food_from_empty(self.grid_cols, self.grid_rows, set(self.snakes[idx]))
+                foods[idx] = _food_from_empty(
+                    self.grid_cols,
+                    self.grid_rows,
+                    set(self.snakes[idx]),
+                    difficulty=self.difficulty,
+                    avoid_corner=False,
+                    head=self.snakes[idx][0],
+                )
             else:
                 self.snakes[idx].pop()
 
@@ -427,13 +540,24 @@ class Room:
 
         if grows[0] or grows[1]:
             occupied = set(self.snakes[0]) | set(self.snakes[1])
-            self.foods = _food_from_empty(self.grid_cols, self.grid_rows, occupied)
+            head0 = self.snakes[0][0]
+            head1 = self.snakes[1][0]
+            avg_head = ((head0[0] + head1[0]) // 2, (head0[1] + head1[1]) // 2)
+            self.foods = _food_from_empty(
+                self.grid_cols,
+                self.grid_rows,
+                occupied,
+                difficulty=self.difficulty,
+                avoid_corner=False,
+                head=avg_head,
+            )
 
         self.updated_at = time.time()
 
     def _finish_by_status(self, forced_winner: int | None = None) -> None:
         self.started = False
         self.ended = True
+        self.countdown_until = 0.0
 
         if forced_winner in (0, 1):
             self.winner = forced_winner
@@ -471,6 +595,7 @@ class Room:
             "gridCols": self.grid_cols,
             "gridRows": self.grid_rows,
             "speedLevel": self.speed_level,
+            "difficulty": self.difficulty,
             "tickMs": int(self.tick_interval * 1000),
             "started": self.started,
             "ended": self.ended,
@@ -481,6 +606,7 @@ class Room:
             "alive": list(self.alive),
             "viewerIndex": viewer_index,
             "updatedAt": self.updated_at,
+            "countdownMs": max(0, int((self.countdown_until - time.monotonic()) * 1000)),
         }
         if self.mode == "arena":
             payload["food"] = list(self.foods) if isinstance(self.foods, tuple) else [0, 0]
@@ -513,6 +639,7 @@ class RoomHub:
         grid_cols: int,
         grid_rows: int,
         speed_level: int,
+        difficulty: str,
         style: dict[str, str],
     ) -> dict[str, Any]:
         with self.lock:
@@ -523,6 +650,7 @@ class RoomHub:
                 grid_cols=grid_cols,
                 grid_rows=grid_rows,
                 speed_level=speed_level,
+                difficulty=difficulty,
             )
             token, index = room.add_player(name, style)
             room.message = "Waiting for player 2"
@@ -577,6 +705,7 @@ class RoomHub:
         grid_cols: int | None,
         grid_rows: int | None,
         speed_level: int | None,
+        difficulty: str | None,
     ) -> dict[str, Any]:
         normalized = code.strip().upper()
         with self.lock:
@@ -592,6 +721,7 @@ class RoomHub:
                 grid_cols=grid_cols,
                 grid_rows=grid_rows,
                 speed_level=speed_level,
+                difficulty=difficulty,
             )
             payload = room.to_payload(token)
         return payload
@@ -757,6 +887,7 @@ class SnakeRequestHandler(BaseHTTPRequestHandler):
                 grid_cols = _as_int(payload.get("gridCols"), DEFAULT_GRID_COLS, MIN_GRID_COLS, MAX_GRID_COLS)
                 grid_rows = _as_int(payload.get("gridRows"), DEFAULT_GRID_ROWS, MIN_GRID_ROWS, MAX_GRID_ROWS)
                 speed_level = _as_int(payload.get("speedLevel"), DEFAULT_SPEED_LEVEL, MIN_SPEED_LEVEL, MAX_SPEED_LEVEL)
+                difficulty = _normalize_difficulty(payload.get("difficulty"), DEFAULT_DIFFICULTY)
                 style = _normalize_style(payload.get("style"))
                 data = HUB.create_room(
                     mode=mode,
@@ -764,6 +895,7 @@ class SnakeRequestHandler(BaseHTTPRequestHandler):
                     grid_cols=grid_cols,
                     grid_rows=grid_rows,
                     speed_level=speed_level,
+                    difficulty=difficulty,
                     style=style,
                 )
                 self._send_json(HTTPStatus.OK, {"ok": True, "data": data})
@@ -818,6 +950,10 @@ class SnakeRequestHandler(BaseHTTPRequestHandler):
                     MIN_SPEED_LEVEL,
                     MAX_SPEED_LEVEL,
                 )
+                difficulty = None if "difficulty" not in payload else _normalize_difficulty(
+                    payload.get("difficulty"),
+                    DEFAULT_DIFFICULTY,
+                )
                 data = HUB.update_room_config(
                     room_code,
                     token,
@@ -825,6 +961,7 @@ class SnakeRequestHandler(BaseHTTPRequestHandler):
                     grid_cols=grid_cols,
                     grid_rows=grid_rows,
                     speed_level=speed_level,
+                    difficulty=difficulty,
                 )
                 self._send_json(HTTPStatus.OK, {"ok": True, "state": data})
                 return

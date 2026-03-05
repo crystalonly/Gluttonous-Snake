@@ -24,9 +24,16 @@ const SNAKE_PALETTES = {
   sunset: { head: "#ffd39a", tail: "#cb5d34" },
   glacier: { head: "#b5e7ff", tail: "#2c74a5" },
 };
+const FOOD_COLORS = {
+  classic: "#ff6666",
+  mint: "#63efb2",
+  violet: "#b989ff",
+  sun: "#ffcb62",
+};
 
 const SNAKE_SHAPES = new Set(["rounded", "square", "circle", "diamond"]);
 const FOOD_STYLES = new Set(["orb", "crystal", "star", "ring"]);
+const FOOD_COLOR_STYLES = new Set(["classic", "mint", "violet", "sun"]);
 const MODES = new Set(["separate", "arena"]);
 
 const I18N = {
@@ -69,6 +76,11 @@ const I18N = {
     food_style_crystal: "水晶",
     food_style_star: "星芒",
     food_style_ring: "光环",
+    food_color: "豆子颜色",
+    food_color_classic: "经典红",
+    food_color_mint: "薄荷绿",
+    food_color_violet: "紫晶色",
+    food_color_sun: "太阳金",
     grid_cols: "列数",
     grid_rows: "行数",
     grid_size: "网格",
@@ -107,6 +119,11 @@ const I18N = {
     online_mode: "模式",
     online_mode_separate: "模式1: 分屏各吃各的",
     online_mode_arena: "模式2: 同屏抢同一颗豆子",
+    mini_position: "小窗位置",
+    mini_pos_right_top: "右上角",
+    mini_pos_left_top: "左上角",
+    self_view: "我的主视角",
+    opponent_mini: "对手小窗",
     apply_room_config: "应用房间配置",
     apply_style: "同步我的样式",
     status_idle: "未连接房间",
@@ -114,6 +131,7 @@ const I18N = {
     status_joined: "已加入房间，等待房主开始",
     status_wait_start: "等待房主开始",
     status_running: "对战进行中",
+    status_countdown: "倒计时中",
     status_invite_copied: "邀请链接已复制",
     status_need_room: "请先创建或加入房间",
     status_not_host: "只有房主可修改房间配置",
@@ -126,6 +144,7 @@ const I18N = {
     result_draw: "平局",
     result_you_win: "你赢了",
     result_you_lose: "你输了",
+    countdown_title: "对战即将开始",
     you_tag: "你",
     online_hint: "双人是服务端权威同步，前端做即时输入反馈以降低体感延迟。",
   },
@@ -168,6 +187,11 @@ const I18N = {
     food_style_crystal: "Crystal",
     food_style_star: "Star",
     food_style_ring: "Ring",
+    food_color: "Bean Color",
+    food_color_classic: "Classic Red",
+    food_color_mint: "Mint Green",
+    food_color_violet: "Violet",
+    food_color_sun: "Sun Gold",
     grid_cols: "Cols",
     grid_rows: "Rows",
     grid_size: "Grid",
@@ -206,6 +230,11 @@ const I18N = {
     online_mode: "Mode",
     online_mode_separate: "Mode 1: split maps",
     online_mode_arena: "Mode 2: shared arena",
+    mini_position: "Mini Window",
+    mini_pos_right_top: "Top Right",
+    mini_pos_left_top: "Top Left",
+    self_view: "My Main View",
+    opponent_mini: "Opponent Mini",
     apply_room_config: "Apply Room Config",
     apply_style: "Sync My Style",
     status_idle: "Not connected",
@@ -213,6 +242,7 @@ const I18N = {
     status_joined: "Joined room, waiting for host",
     status_wait_start: "Waiting for host to start",
     status_running: "Match running",
+    status_countdown: "Countdown",
     status_invite_copied: "Invite link copied",
     status_need_room: "Create or join a room first",
     status_not_host: "Only host can change room config",
@@ -225,6 +255,7 @@ const I18N = {
     result_draw: "Draw",
     result_you_win: "You win",
     result_you_lose: "You lose",
+    countdown_title: "Match starts in",
     you_tag: "You",
     online_hint: "Duel uses server-authoritative sync with immediate local input feedback.",
   },
@@ -267,6 +298,11 @@ const I18N = {
     food_style_crystal: "クリスタル",
     food_style_star: "スター",
     food_style_ring: "リング",
+    food_color: "エサ色",
+    food_color_classic: "クラシック赤",
+    food_color_mint: "ミントグリーン",
+    food_color_violet: "バイオレット",
+    food_color_sun: "サンゴールド",
     grid_cols: "列数",
     grid_rows: "行数",
     grid_size: "グリッド",
@@ -305,6 +341,11 @@ const I18N = {
     online_mode: "モード",
     online_mode_separate: "モード1: 分割マップ",
     online_mode_arena: "モード2: 共通マップ",
+    mini_position: "ミニ位置",
+    mini_pos_right_top: "右上",
+    mini_pos_left_top: "左上",
+    self_view: "自分のメイン画面",
+    opponent_mini: "相手ミニ画面",
     apply_room_config: "ルーム設定を反映",
     apply_style: "自分の見た目を同期",
     status_idle: "未接続",
@@ -312,6 +353,7 @@ const I18N = {
     status_joined: "参加済み、ホスト開始待ち",
     status_wait_start: "ホスト開始待ち",
     status_running: "対戦中",
+    status_countdown: "カウントダウン中",
     status_invite_copied: "招待リンクをコピーしました",
     status_need_room: "先にルーム作成/参加してください",
     status_not_host: "ホストのみ設定変更できます",
@@ -324,6 +366,7 @@ const I18N = {
     result_draw: "引き分け",
     result_you_win: "あなたの勝ち",
     result_you_lose: "あなたの負け",
+    countdown_title: "開始まで",
     you_tag: "あなた",
     online_hint: "対戦はサーバー同期方式で、操作入力は即時反映します。",
   },
@@ -361,12 +404,15 @@ const singleState = {
 
 const onlinePrefs = {
   mode: "separate",
+  difficulty: "mixed",
   speedLevel: 5,
   gridCols: 32,
   gridRows: 24,
+  miniPosition: "right-top",
   snakeColor: "sunset",
   snakeShape: "square",
   foodStyle: "crystal",
+  foodColor: "classic",
 };
 
 const onlineState = {
@@ -397,6 +443,11 @@ const singleBestLengthEl = $("singleBestLength");
 const singleMetaRow = $("singleMetaRow");
 const singleHint = $("singleHint");
 const singleSpeedLabel = $("singleSpeedLabel");
+const singleSpeedInlineEl = $("singleSpeedInline");
+const singleSpeedInlineValue = $("singleSpeedInlineValue");
+const singleDifficultyTag = $("singleDifficultyTag");
+const singleModeTag = $("singleModeTag");
+const singleGridTag = $("singleGridTag");
 
 const singleStartBtn = $("singleStartBtn");
 const singlePauseBtn = $("singlePauseBtn");
@@ -406,6 +457,8 @@ const reviveNoBtn = $("reviveNoBtn");
 
 const playerNameInput = $("playerNameInput");
 const roomCodeInput = $("roomCodeInput");
+const onlineModeQuickEl = $("onlineModeQuick");
+const onlineDifficultyQuickEl = $("onlineDifficultyQuick");
 const createRoomBtn = $("createRoomBtn");
 const joinRoomBtn = $("joinRoomBtn");
 const startMatchBtn = $("startMatchBtn");
@@ -419,16 +472,19 @@ const onlineScoreRowEl = $("onlineScoreRow");
 
 const onlineArenaCanvas = $("onlineArenaCanvas");
 const onlineArenaCtx = onlineArenaCanvas.getContext("2d");
-const onlineSplitWrap = $("onlineSplitWrap");
-const onlineLeftCanvas = $("onlineLeftCanvas");
-const onlineRightCanvas = $("onlineRightCanvas");
-const onlineLeftCtx = onlineLeftCanvas.getContext("2d");
-const onlineRightCtx = onlineRightCanvas.getContext("2d");
-const leftPlayerLabel = $("leftPlayerLabel");
-const rightPlayerLabel = $("rightPlayerLabel");
+const onlineSeparateWrap = $("onlineSeparateWrap");
+const onlineMainCanvas = $("onlineMainCanvas");
+const onlineMainCtx = onlineMainCanvas.getContext("2d");
+const onlineMiniWrap = $("onlineMiniWrap");
+const onlineMiniCanvas = $("onlineMiniCanvas");
+const onlineMiniCtx = onlineMiniCanvas.getContext("2d");
+const mainPlayerLabel = $("mainPlayerLabel");
+const miniPlayerLabel = $("miniPlayerLabel");
 const onlineResultBanner = $("onlineResultBanner");
 const resultEmoji = $("resultEmoji");
 const resultText = $("resultText");
+const onlineCountdownBanner = $("onlineCountdownBanner");
+const onlineCountdownValue = $("onlineCountdownValue");
 
 const settingsModal = $("settingsModal");
 const openSettingsBtn = $("openSettingsBtn");
@@ -449,13 +505,16 @@ const singleGridColsEl = $("singleGridCols");
 const singleGridRowsEl = $("singleGridRows");
 
 const onlineModeSettingEl = $("onlineModeSetting");
+const onlineDifficultySettingEl = $("onlineDifficultySetting");
 const onlineSpeedEl = $("onlineSpeed");
 const onlineSpeedLabel = $("onlineSpeedLabel");
 const onlineSnakeColorEl = $("onlineSnakeColor");
 const onlineSnakeShapeEl = $("onlineSnakeShape");
 const onlineFoodStyleEl = $("onlineFoodStyle");
+const onlineFoodColorEl = $("onlineFoodColor");
 const onlineGridColsEl = $("onlineGridCols");
 const onlineGridRowsEl = $("onlineGridRows");
+const miniMapPositionEl = $("miniMapPosition");
 const applyOnlineConfigBtn = $("applyOnlineConfigBtn");
 const applyOnlineStyleBtn = $("applyOnlineStyleBtn");
 const onlineConfigHint = $("onlineConfigHint");
@@ -483,12 +542,17 @@ function normalizeMode(value) {
   return MODES.has(value) ? value : "separate";
 }
 
+function normalizeMiniPosition(value) {
+  return value === "left-top" ? "left-top" : "right-top";
+}
+
 function normalizeStyle(style) {
   const source = style && typeof style === "object" ? style : {};
   const snakeColor = typeof source.snakeColor === "string" && SNAKE_PALETTES[source.snakeColor] ? source.snakeColor : "neon";
   const snakeShape = typeof source.snakeShape === "string" && SNAKE_SHAPES.has(source.snakeShape) ? source.snakeShape : "rounded";
   const foodStyle = typeof source.foodStyle === "string" && FOOD_STYLES.has(source.foodStyle) ? source.foodStyle : "orb";
-  return { snakeColor, snakeShape, foodStyle };
+  const foodColor = typeof source.foodColor === "string" && FOOD_COLOR_STYLES.has(source.foodColor) ? source.foodColor : "classic";
+  return { snakeColor, snakeShape, foodStyle, foodColor };
 }
 
 function formatText(text, vars = {}) {
@@ -535,6 +599,8 @@ function applyLanguageToDom() {
 
   singleHint.textContent = t("single_hint");
   onlineConfigHint.textContent = t("online_hint");
+  mainPlayerLabel.textContent = `${t("self_view")}: P1 (${t("you_tag")})`;
+  miniPlayerLabel.textContent = `${t("opponent_mini")}: P2`;
   updateSingleOverlay();
   updateSingleStats();
   updateOnlineStaticTexts();
@@ -569,12 +635,15 @@ function loadSettings() {
     singleState.lastLength = Math.max(4, intOr(data.lastLength, singleState.lastLength));
 
     onlinePrefs.mode = normalizeMode(data.onlineMode);
+    onlinePrefs.difficulty = ["easy", "mixed", "hard"].includes(data.onlineDifficulty) ? data.onlineDifficulty : onlinePrefs.difficulty;
     onlinePrefs.speedLevel = clamp(intOr(data.onlineSpeedLevel, onlinePrefs.speedLevel), LIMITS.speed.min, LIMITS.speed.max);
     onlinePrefs.gridCols = clamp(intOr(data.onlineGridCols, onlinePrefs.gridCols), LIMITS.cols.min, LIMITS.cols.max);
     onlinePrefs.gridRows = clamp(intOr(data.onlineGridRows, onlinePrefs.gridRows), LIMITS.rows.min, LIMITS.rows.max);
+    onlinePrefs.miniPosition = normalizeMiniPosition(data.onlineMiniPosition);
     onlinePrefs.snakeColor = normalizeStyle({ snakeColor: data.onlineSnakeColor }).snakeColor;
     onlinePrefs.snakeShape = normalizeStyle({ snakeShape: data.onlineSnakeShape }).snakeShape;
     onlinePrefs.foodStyle = normalizeStyle({ foodStyle: data.onlineFoodStyle }).foodStyle;
+    onlinePrefs.foodColor = normalizeStyle({ foodColor: data.onlineFoodColor }).foodColor;
   } catch (_err) {
     // ignore invalid storage
   }
@@ -599,12 +668,15 @@ function saveSettings() {
     lastScore: singleState.lastScore,
     lastLength: singleState.lastLength,
     onlineMode: onlinePrefs.mode,
+    onlineDifficulty: onlinePrefs.difficulty,
     onlineSpeedLevel: onlinePrefs.speedLevel,
     onlineGridCols: onlinePrefs.gridCols,
     onlineGridRows: onlinePrefs.gridRows,
+    onlineMiniPosition: onlinePrefs.miniPosition,
     onlineSnakeColor: onlinePrefs.snakeColor,
     onlineSnakeShape: onlinePrefs.snakeShape,
     onlineFoodStyle: onlinePrefs.foodStyle,
+    onlineFoodColor: onlinePrefs.foodColor,
   };
   localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(payload));
 }
@@ -649,6 +721,7 @@ function updateControlsFromState() {
 
   singleDifficultyEl.value = singleState.difficulty;
   singleSpeedEl.value = String(singleState.speedLevel);
+  singleSpeedInlineEl.value = String(singleState.speedLevel);
   singleSpeedLabel.textContent = String(singleState.speedLevel);
   singleModeEl.value = singleState.mode;
   singleSnakeColorEl.value = singleState.snakeColor;
@@ -658,13 +731,23 @@ function updateControlsFromState() {
   singleGridRowsEl.value = String(singleState.gridRows);
 
   onlineModeSettingEl.value = onlinePrefs.mode;
+  onlineModeQuickEl.value = onlinePrefs.mode;
+  onlineDifficultySettingEl.value = onlinePrefs.difficulty;
+  onlineDifficultyQuickEl.value = onlinePrefs.difficulty;
   onlineSpeedEl.value = String(onlinePrefs.speedLevel);
   onlineSpeedLabel.textContent = String(onlinePrefs.speedLevel);
   onlineSnakeColorEl.value = onlinePrefs.snakeColor;
   onlineSnakeShapeEl.value = onlinePrefs.snakeShape;
   onlineFoodStyleEl.value = onlinePrefs.foodStyle;
+  onlineFoodColorEl.value = onlinePrefs.foodColor;
   onlineGridColsEl.value = String(onlinePrefs.gridCols);
   onlineGridRowsEl.value = String(onlinePrefs.gridRows);
+  miniMapPositionEl.value = onlinePrefs.miniPosition;
+}
+
+function applyMiniPositionClass() {
+  onlineMiniWrap.classList.remove("mini-pos-right-top", "mini-pos-left-top");
+  onlineMiniWrap.classList.add(onlinePrefs.miniPosition === "left-top" ? "mini-pos-left-top" : "mini-pos-right-top");
 }
 
 function singleMoveMs() {
@@ -766,7 +849,13 @@ function updateSingleStats() {
   singleLengthEl.textContent = String(singleState.snake.length);
   singleBestLengthEl.textContent = String(singleState.bestLength);
   singleMetaRow.textContent = `${t("games_played")}: ${singleState.gamesPlayed} | ${t("last_round")}: ${singleState.lastScore}/${singleState.lastLength}`;
+  singleSpeedEl.value = String(singleState.speedLevel);
+  singleSpeedInlineEl.value = String(singleState.speedLevel);
   singleSpeedLabel.textContent = String(singleState.speedLevel);
+  singleSpeedInlineValue.textContent = String(singleState.speedLevel);
+  singleDifficultyTag.textContent = t(`difficulty_${singleState.difficulty}`);
+  singleModeTag.textContent = singleState.mode === "invincible" ? t("mode_invincible") : t("mode_normal");
+  singleGridTag.textContent = `${singleState.gridCols} x ${singleState.gridRows}`;
   updateSingleOverlay();
 }
 
@@ -809,32 +898,113 @@ function gameOverSingle() {
   updateSingleStats();
 }
 
+function buildRandomReviveSnake(targetLength, cols, rows, attempts = 300) {
+  if (targetLength < 4) return null;
+  const minWallDistance = cols >= 12 && rows >= 12 ? 2 : 1;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const start = [Math.floor(Math.random() * cols), Math.floor(Math.random() * rows)];
+    const snake = [start];
+    const occupied = new Set([toCellKey(start[0], start[1])]);
+
+    while (snake.length < targetLength) {
+      const [cx, cy] = snake[snake.length - 1];
+      const candidates = [];
+      for (const [dx, dy] of Object.values(DIRECTION_MAP)) {
+        const nx = cx + dx;
+        const ny = cy + dy;
+        if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) continue;
+        const key = toCellKey(nx, ny);
+        if (occupied.has(key)) continue;
+        const tempOccupied = new Set(occupied);
+        tempOccupied.add(key);
+        const free = freeNeighborCount([nx, ny], tempOccupied, cols, rows);
+        const wallDist = Math.min(nx, cols - 1 - nx, ny, rows - 1 - ny);
+        const score = free * 2.4 + wallDist * 0.9 + Math.random() * 0.4;
+        candidates.push({ cell: [nx, ny], score });
+      }
+      if (!candidates.length) break;
+      candidates.sort((a, b) => b.score - a.score);
+      const pool = candidates.slice(0, Math.min(3, candidates.length));
+      const chosen = pool[Math.floor(Math.random() * pool.length)].cell;
+      snake.push(chosen);
+      occupied.add(toCellKey(chosen[0], chosen[1]));
+    }
+
+    if (snake.length === targetLength) {
+      const [hx, hy] = snake[0];
+      const wallDist = Math.min(hx, cols - 1 - hx, hy, rows - 1 - hy);
+      if (wallDist < minWallDistance) {
+        continue;
+      }
+      let nearbyBody = 0;
+      for (let idx = 2; idx < snake.length; idx += 1) {
+        const [bx, by] = snake[idx];
+        if (Math.abs(bx - hx) + Math.abs(by - hy) <= 2) {
+          nearbyBody += 1;
+        }
+      }
+      if (nearbyBody > 3) {
+        continue;
+      }
+      return { snake };
+    }
+  }
+  return null;
+}
+
+function pickReviveDirection(snake, cols, rows) {
+  if (!snake.length) return [1, 0];
+  const occupied = new Set(snake.map(([x, y]) => toCellKey(x, y)));
+  const tail = snake[snake.length - 1];
+  const [hx, hy] = snake[0];
+  const options = [];
+  for (const [dx, dy] of Object.values(DIRECTION_MAP)) {
+    const nx = hx + dx;
+    const ny = hy + dy;
+    const key = toCellKey(nx, ny);
+    if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) continue;
+    const hitsBody = occupied.has(key) && (!tail || nx !== tail[0] || ny !== tail[1]);
+    if (hitsBody) continue;
+    const free = freeNeighborCount([nx, ny], occupied, cols, rows);
+    const wallDist = Math.min(nx, cols - 1 - nx, ny, rows - 1 - ny);
+    let forwardSpace = 0;
+    for (let step = 1; step <= 3; step += 1) {
+      const fx = hx + dx * step;
+      const fy = hy + dy * step;
+      if (fx < 0 || fx >= cols || fy < 0 || fy >= rows) break;
+      const fKey = toCellKey(fx, fy);
+      if (occupied.has(fKey) && (!tail || fx !== tail[0] || fy !== tail[1])) break;
+      forwardSpace += 1;
+    }
+    const score = free * 2.2 + wallDist * 1.1 + forwardSpace * 1.6 + Math.random() * 0.5;
+    options.push({ direction: [dx, dy], score });
+  }
+  if (options.length) {
+    options.sort((a, b) => b.score - a.score);
+    const pool = options.slice(0, Math.min(3, options.length));
+    return pool[Math.floor(Math.random() * pool.length)].direction;
+  }
+  return inferDirectionFromSnake(snake, [1, 0]);
+}
+
 function safeReviveSingle() {
   const cols = singleState.gridCols;
   const rows = singleState.gridRows;
-  const len = clamp(singleState.snake.length, 4, Math.max(4, cols - 3));
-  let best = null;
-  for (let y = 2; y <= rows - 3; y += 1) {
-    for (let startX = 1; startX <= cols - len - 1; startX += 1) {
-      const snake = [];
-      for (let i = 0; i < len; i += 1) {
-        snake.push([startX + len - 1 - i, y]);
-      }
-      const [hx, hy] = snake[0];
-      const wallDist = Math.min(hx, cols - 1 - hx, hy, rows - 1 - hy);
-      const score = wallDist * 2.2 + y * 0.02 + (cols - startX) * 0.01;
-      if (!best || score > best.score) {
-        best = { snake, direction: [1, 0], score };
-      }
-    }
+  const maxLength = Math.max(4, cols * rows - 1);
+  const originalLength = clamp(singleState.snake.length, 4, maxLength);
+  let revived = null;
+  for (let length = originalLength; length >= 4; length -= 1) {
+    revived = buildRandomReviveSnake(length, cols, rows, length > 45 ? 520 : 320);
+    if (revived) break;
   }
-  if (!best) {
+  if (!revived) {
     resetSingleSnake();
     return;
   }
-  singleState.snake = best.snake;
-  singleState.direction = best.direction;
-  singleState.nextDirection = best.direction;
+  const direction = pickReviveDirection(revived.snake, cols, rows);
+  singleState.snake = revived.snake;
+  singleState.direction = direction;
+  singleState.nextDirection = direction;
   singleState.food = spawnSingleFood();
 }
 
@@ -942,7 +1112,7 @@ function drawGridBackground(ctx, cols, rows, width, height) {
   }
 }
 
-function drawFood(ctx, food, cols, rows, canvas, style, now, colorHex) {
+function drawFood(ctx, food, cols, rows, canvas, style, now, colorKey = "classic") {
   if (!food) return;
   const [x, y] = food;
   const width = canvas.width;
@@ -952,14 +1122,16 @@ function drawFood(ctx, food, cols, rows, canvas, style, now, colorHex) {
   const cell = Math.min(cellW, cellH);
   const cx = (x + 0.5) * cellW;
   const cy = (y + 0.5) * cellH;
-  const pulse = 0.78 + 0.18 * Math.sin(now / 220);
+  const pulse = (Math.sin(now / 140) + 1) * 0.5;
   ctx.save();
-  ctx.fillStyle = colorHex;
-  ctx.strokeStyle = colorHex;
+  const foodColor = FOOD_COLORS[colorKey] || FOOD_COLORS.classic;
+  ctx.fillStyle = foodColor;
+  ctx.strokeStyle = foodColor;
   ctx.lineWidth = Math.max(1.4, cell * 0.1);
-  const radius = cell * 0.25 * pulse;
+  const radius = cell * (0.29 + pulse * 0.06);
 
   if (style === "crystal") {
+    ctx.fillStyle = foodColor;
     ctx.beginPath();
     ctx.moveTo(cx, cy - cell * 0.34);
     ctx.lineTo(cx + cell * 0.24, cy);
@@ -968,6 +1140,7 @@ function drawFood(ctx, food, cols, rows, canvas, style, now, colorHex) {
     ctx.closePath();
     ctx.fill();
   } else if (style === "star") {
+    ctx.fillStyle = foodColor;
     const outer = cell * 0.3 * pulse;
     const inner = outer * 0.48;
     ctx.beginPath();
@@ -981,27 +1154,50 @@ function drawFood(ctx, food, cols, rows, canvas, style, now, colorHex) {
     }
     ctx.closePath();
     ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.28)";
+    ctx.beginPath();
+    ctx.arc(cx, cy, inner * 0.55, 0, Math.PI * 2);
+    ctx.fill();
   } else if (style === "ring") {
+    ctx.strokeStyle = foodColor;
+    ctx.lineWidth = Math.max(1.5, cell * 0.13);
     ctx.beginPath();
     ctx.arc(cx, cy, radius * 1.2, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.fillStyle = foodColor;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 0.55, 0, Math.PI * 2);
+    ctx.fill();
   } else {
-    const glow = ctx.createRadialGradient(cx, cy, 1, cx, cy, radius * 2.2);
-    glow.addColorStop(0, colorHex);
-    glow.addColorStop(1, "rgba(255,188,120,0.06)");
+    const outerRadius = cell * (0.44 + pulse * 0.06);
+    const glow = ctx.createRadialGradient(cx, cy, 1, cx, cy, outerRadius);
+    glow.addColorStop(0, foodColor);
+    glow.addColorStop(1, "rgba(255, 109, 109, 0.02)");
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(cx, cy, radius * 2.2, 0, Math.PI * 2);
+    ctx.arc(cx, cy, outerRadius, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = colorHex;
+    ctx.fillStyle = foodColor;
     ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.arc(cx, cy, cell * 0.3, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.restore();
 }
 
-function drawSnake(ctx, snake, cols, rows, canvas, palette, shape) {
+function inferDirectionFromSnake(snake, fallback = [1, 0]) {
+  if (!Array.isArray(snake) || snake.length < 2) return fallback;
+  const [hx, hy] = snake[0];
+  const [nx, ny] = snake[1];
+  const dx = hx - nx;
+  const dy = hy - ny;
+  if ((Math.abs(dx) === 1 && dy === 0) || (Math.abs(dy) === 1 && dx === 0)) {
+    return [dx, dy];
+  }
+  return fallback;
+}
+
+function drawSnake(ctx, snake, cols, rows, canvas, palette, shape, headDirection = [1, 0]) {
   if (!Array.isArray(snake)) return;
   const width = canvas.width;
   const height = canvas.height;
@@ -1040,6 +1236,47 @@ function drawSnake(ctx, snake, cols, rows, canvas, palette, shape) {
     }
     ctx.restore();
   });
+
+  if (!snake.length) return;
+  const [headX, headY] = snake[0];
+  const baseX = headX * cellW;
+  const baseY = headY * cellH;
+  const cell = Math.min(cellW, cellH);
+  const eyeSize = Math.max(2.4, cell * 0.14);
+  const front = cell * 0.66;
+  const back = cell * 0.3;
+  const sideLow = cell * 0.28;
+  const sideHigh = cell * 0.6;
+  let eyes;
+  if (headDirection[0] === 1) {
+    eyes = [
+      [front, sideLow],
+      [front, sideHigh],
+    ];
+  } else if (headDirection[0] === -1) {
+    eyes = [
+      [back, sideLow],
+      [back, sideHigh],
+    ];
+  } else if (headDirection[1] === -1) {
+    eyes = [
+      [sideLow, back],
+      [sideHigh, back],
+    ];
+  } else {
+    eyes = [
+      [sideLow, front],
+      [sideHigh, front],
+    ];
+  }
+  ctx.save();
+  ctx.fillStyle = "#052933";
+  for (const [ox, oy] of eyes) {
+    ctx.beginPath();
+    ctx.arc(baseX + ox, baseY + oy, eyeSize / 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
 }
 
 function drawSingleBoard(now) {
@@ -1047,8 +1284,8 @@ function drawSingleBoard(now) {
   const rows = singleState.gridRows;
   drawGridBackground(singleCtx, cols, rows, singleCanvas.width, singleCanvas.height);
   const palette = SNAKE_PALETTES[singleState.snakeColor] || SNAKE_PALETTES.neon;
-  drawFood(singleCtx, singleState.food, cols, rows, singleCanvas, singleState.foodStyle, now, "#ffbf78");
-  drawSnake(singleCtx, singleState.snake, cols, rows, singleCanvas, palette, singleState.snakeShape);
+  drawFood(singleCtx, singleState.food, cols, rows, singleCanvas, singleState.foodStyle, now, "classic");
+  drawSnake(singleCtx, singleState.snake, cols, rows, singleCanvas, palette, singleState.snakeShape, singleState.direction);
 }
 
 function singleLoop(now) {
@@ -1108,20 +1345,13 @@ function resizeOnlineCanvases() {
     setCanvasDisplaySize(onlineArenaCanvas, grid.cols, grid.rows, cell);
     return;
   }
+  const maxW = Math.max(240, boardCard.clientWidth - 24);
+  const maxH = Math.max(220, boardCard.clientHeight - 24);
+  const mainCell = calcCellSize(grid.cols, grid.rows, maxW * 0.96, maxH * 0.96);
+  setCanvasDisplaySize(onlineMainCanvas, grid.cols, grid.rows, mainCell);
 
-  const leftWrap = onlineLeftCanvas.parentElement;
-  const rightWrap = onlineRightCanvas.parentElement;
-  if (!leftWrap || !rightWrap) return;
-  const leftRect = leftWrap.getBoundingClientRect();
-  const rightRect = rightWrap.getBoundingClientRect();
-  const stacked = Math.abs(leftRect.top - rightRect.top) > 6;
-  const eachMaxW = Math.max(190, Math.min(leftWrap.clientWidth, rightWrap.clientWidth) - 8);
-  const eachMaxH = stacked
-    ? Math.max(170, Math.floor((boardCard.clientHeight - 20) / 2))
-    : Math.max(170, boardCard.clientHeight - 36);
-  const cell = calcCellSize(grid.cols, grid.rows, eachMaxW, eachMaxH);
-  setCanvasDisplaySize(onlineLeftCanvas, grid.cols, grid.rows, cell);
-  setCanvasDisplaySize(onlineRightCanvas, grid.cols, grid.rows, cell);
+  const miniCell = Math.max(6, mainCell * 0.4);
+  setCanvasDisplaySize(onlineMiniCanvas, grid.cols, grid.rows, miniCell);
 }
 
 function resizeAllCanvases() {
@@ -1157,11 +1387,12 @@ function showOnlineBoards(mode) {
   onlineState.mode = normalizeMode(mode);
   if (onlineState.mode === "arena") {
     onlineArenaCanvas.classList.remove("hidden");
-    onlineSplitWrap.classList.add("hidden");
+    onlineSeparateWrap.classList.add("hidden");
   } else {
     onlineArenaCanvas.classList.add("hidden");
-    onlineSplitWrap.classList.remove("hidden");
+    onlineSeparateWrap.classList.remove("hidden");
   }
+  applyMiniPositionClass();
   resizeOnlineCanvases();
 }
 
@@ -1178,7 +1409,7 @@ function drawArenaState(state, now) {
   const p0Style = getPlayerStyle(state, 0);
   const p1Style = getPlayerStyle(state, 1);
   const viewerStyle = getPlayerStyle(state, clamp(onlineState.playerIndex, 0, 1));
-  drawFood(onlineArenaCtx, state.food, cols, rows, onlineArenaCanvas, viewerStyle.foodStyle, now, "#ffd08e");
+  drawFood(onlineArenaCtx, state.food, cols, rows, onlineArenaCanvas, viewerStyle.foodStyle, now, viewerStyle.foodColor);
   drawSnake(
     onlineArenaCtx,
     state.snakes?.[0] || [],
@@ -1187,6 +1418,7 @@ function drawArenaState(state, now) {
     onlineArenaCanvas,
     SNAKE_PALETTES[p0Style.snakeColor] || SNAKE_PALETTES.neon,
     p0Style.snakeShape,
+    inferDirectionFromSnake(state.snakes?.[0] || [], [1, 0]),
   );
   drawSnake(
     onlineArenaCtx,
@@ -1196,47 +1428,62 @@ function drawArenaState(state, now) {
     onlineArenaCanvas,
     SNAKE_PALETTES[p1Style.snakeColor] || SNAKE_PALETTES.sunset,
     p1Style.snakeShape,
+    inferDirectionFromSnake(state.snakes?.[1] || [], [-1, 0]),
   );
 }
 
 function drawSeparateState(state, now) {
   const cols = intOr(state.gridCols, onlinePrefs.gridCols);
   const rows = intOr(state.gridRows, onlinePrefs.gridRows);
-  drawGridBackground(onlineLeftCtx, cols, rows, onlineLeftCanvas.width, onlineLeftCanvas.height);
-  drawGridBackground(onlineRightCtx, cols, rows, onlineRightCanvas.width, onlineRightCanvas.height);
+  const myIndex = onlineState.playerIndex === 1 ? 1 : 0;
+  const opIndex = myIndex === 0 ? 1 : 0;
+  const myStyle = getPlayerStyle(state, myIndex);
+  const opStyle = getPlayerStyle(state, opIndex);
+  const mySnake = state.snakes?.[myIndex] || [];
+  const opSnake = state.snakes?.[opIndex] || [];
+  const myFood = state.foods?.[myIndex];
+  const opFood = state.foods?.[opIndex];
 
-  const leftStyle = getPlayerStyle(state, 0);
-  const rightStyle = getPlayerStyle(state, 1);
-  drawFood(onlineLeftCtx, state.foods?.[0], cols, rows, onlineLeftCanvas, leftStyle.foodStyle, now, "#ffd08e");
-  drawFood(onlineRightCtx, state.foods?.[1], cols, rows, onlineRightCanvas, rightStyle.foodStyle, now, "#ffd08e");
-
+  drawGridBackground(onlineMainCtx, cols, rows, onlineMainCanvas.width, onlineMainCanvas.height);
+  drawFood(onlineMainCtx, myFood, cols, rows, onlineMainCanvas, myStyle.foodStyle, now, myStyle.foodColor);
   drawSnake(
-    onlineLeftCtx,
-    state.snakes?.[0] || [],
+    onlineMainCtx,
+    mySnake,
     cols,
     rows,
-    onlineLeftCanvas,
-    SNAKE_PALETTES[leftStyle.snakeColor] || SNAKE_PALETTES.neon,
-    leftStyle.snakeShape,
+    onlineMainCanvas,
+    SNAKE_PALETTES[myStyle.snakeColor] || SNAKE_PALETTES.neon,
+    myStyle.snakeShape,
+    inferDirectionFromSnake(mySnake, [1, 0]),
   );
+
+  drawGridBackground(onlineMiniCtx, cols, rows, onlineMiniCanvas.width, onlineMiniCanvas.height);
+  drawFood(onlineMiniCtx, opFood, cols, rows, onlineMiniCanvas, opStyle.foodStyle, now, opStyle.foodColor);
   drawSnake(
-    onlineRightCtx,
-    state.snakes?.[1] || [],
+    onlineMiniCtx,
+    opSnake,
     cols,
     rows,
-    onlineRightCanvas,
-    SNAKE_PALETTES[rightStyle.snakeColor] || SNAKE_PALETTES.sunset,
-    rightStyle.snakeShape,
+    onlineMiniCanvas,
+    SNAKE_PALETTES[opStyle.snakeColor] || SNAKE_PALETTES.sunset,
+    opStyle.snakeShape,
+    inferDirectionFromSnake(opSnake, [-1, 0]),
   );
 }
 
 function updateOnlineStaticTexts() {
   const modeText = onlineState.mode === "arena" ? t("online_mode_arena") : t("online_mode_separate");
-  onlineModeTag.textContent = modeText;
+  const difficulty = onlineState.state?.difficulty || onlinePrefs.difficulty;
+  onlineModeTag.textContent = `${modeText} | ${t("difficulty")}: ${t(`difficulty_${difficulty}`)}`;
   onlineSpeedTag.textContent = String(onlineState.state?.speedLevel || onlinePrefs.speedLevel);
   const cols = onlineState.state?.gridCols || onlinePrefs.gridCols;
   const rows = onlineState.state?.gridRows || onlinePrefs.gridRows;
   onlineGridTag.textContent = `${cols} x ${rows}`;
+  if (!onlineState.state) {
+    mainPlayerLabel.textContent = `${t("self_view")}: P1 (${t("you_tag")})`;
+    miniPlayerLabel.textContent = `${t("opponent_mini")}: P2`;
+  }
+  applyMiniPositionClass();
 }
 
 function updateOnlineResult(state) {
@@ -1264,16 +1511,36 @@ function updateOnlineResult(state) {
   }
 }
 
+function updateOnlineCountdown(state) {
+  const remainingMs = Math.max(0, intOr(state.countdownMs, 0));
+  if (remainingMs <= 0) {
+    onlineCountdownBanner.classList.add("hidden");
+    return;
+  }
+  onlineCountdownBanner.classList.remove("hidden");
+  const sec = Math.max(1, Math.ceil(remainingMs / 1000));
+  onlineCountdownValue.textContent = String(sec);
+}
+
 function renderOnlineState(state) {
   onlineState.state = state;
   onlineState.mode = normalizeMode(state.mode || onlineState.mode);
+  onlinePrefs.mode = normalizeMode(state.mode || onlinePrefs.mode);
+  onlinePrefs.difficulty = ["easy", "mixed", "hard"].includes(state.difficulty) ? state.difficulty : onlinePrefs.difficulty;
+  onlinePrefs.speedLevel = clamp(intOr(state.speedLevel, onlinePrefs.speedLevel), LIMITS.speed.min, LIMITS.speed.max);
+  onlinePrefs.gridCols = clamp(intOr(state.gridCols, onlinePrefs.gridCols), LIMITS.cols.min, LIMITS.cols.max);
+  onlinePrefs.gridRows = clamp(intOr(state.gridRows, onlinePrefs.gridRows), LIMITS.rows.min, LIMITS.rows.max);
   showOnlineBoards(onlineState.mode);
+  updateControlsFromState();
   updateOnlineStaticTexts();
 
   const p0 = state.players?.[0]?.name || "P1";
   const p1 = state.players?.[1]?.name || "P2";
-  leftPlayerLabel.textContent = `${p0}${onlineState.playerIndex === 0 ? ` (${t("you_tag")})` : ""}`;
-  rightPlayerLabel.textContent = `${p1}${onlineState.playerIndex === 1 ? ` (${t("you_tag")})` : ""}`;
+  const myIndex = onlineState.playerIndex === 1 ? 1 : 0;
+  const opIndex = myIndex === 0 ? 1 : 0;
+  const names = [p0, p1];
+  mainPlayerLabel.textContent = `${t("self_view")}: ${names[myIndex]} (${t("you_tag")})`;
+  miniPlayerLabel.textContent = `${t("opponent_mini")}: ${names[opIndex] || "P2"}`;
   onlineScoreRowEl.textContent = `${p0} ${state.scores?.[0] ?? 0} : ${state.scores?.[1] ?? 0} ${p1}`;
 
   const now = performance.now();
@@ -1282,9 +1549,12 @@ function renderOnlineState(state) {
   } else {
     drawSeparateState(state, now);
   }
+  updateOnlineCountdown(state);
   updateOnlineResult(state);
 
-  if (state.started) {
+  if (intOr(state.countdownMs, 0) > 0) {
+    setOnlineStatus(`${t("status_countdown")}... ${Math.ceil(Math.max(0, state.countdownMs) / 1000)}`);
+  } else if (state.started) {
     setOnlineStatusKey("status_running");
   } else if (state.ended) {
     setOnlineStatus(state.message || t("result_wait"));
@@ -1337,12 +1607,14 @@ function currentOnlineStylePayload() {
     snakeColor: onlinePrefs.snakeColor,
     snakeShape: onlinePrefs.snakeShape,
     foodStyle: onlinePrefs.foodStyle,
+    foodColor: onlinePrefs.foodColor,
   };
 }
 
 function currentOnlineConfigPayload() {
   return {
     mode: onlinePrefs.mode,
+    difficulty: onlinePrefs.difficulty,
     speedLevel: onlinePrefs.speedLevel,
     gridCols: onlinePrefs.gridCols,
     gridRows: onlinePrefs.gridRows,
@@ -1351,6 +1623,13 @@ function currentOnlineConfigPayload() {
 
 async function handleCreateRoom() {
   const name = clampName(playerNameInput.value, "Player 1");
+  onlinePrefs.mode = normalizeMode(onlineModeQuickEl.value);
+  onlinePrefs.difficulty = ["easy", "mixed", "hard"].includes(onlineDifficultyQuickEl.value)
+    ? onlineDifficultyQuickEl.value
+    : "mixed";
+  updateControlsFromState();
+  updateOnlineStaticTexts();
+  saveSettings();
   try {
     const res = await apiPost("/api/create", {
       name,
@@ -1565,15 +1844,20 @@ function setupSettingsActions() {
 
   singleDifficultyEl.addEventListener("change", () => {
     singleState.difficulty = singleDifficultyEl.value;
+    updateSingleStats();
     saveSettings();
   });
   singleSpeedEl.addEventListener("input", () => {
     singleState.speedLevel = clamp(intOr(singleSpeedEl.value, singleState.speedLevel), LIMITS.speed.min, LIMITS.speed.max);
+    singleSpeedInlineEl.value = String(singleState.speedLevel);
+    singleSpeedInlineValue.textContent = String(singleState.speedLevel);
     singleSpeedLabel.textContent = String(singleState.speedLevel);
+    updateSingleStats();
     saveSettings();
   });
   singleModeEl.addEventListener("change", () => {
     singleState.mode = singleModeEl.value;
+    updateSingleStats();
     saveSettings();
   });
   singleSnakeColorEl.addEventListener("change", () => {
@@ -1590,10 +1874,26 @@ function setupSettingsActions() {
   });
   singleGridColsEl.addEventListener("change", syncSingleGridSettings);
   singleGridRowsEl.addEventListener("change", syncSingleGridSettings);
+  singleSpeedInlineEl.addEventListener("input", () => {
+    singleState.speedLevel = clamp(intOr(singleSpeedInlineEl.value, singleState.speedLevel), LIMITS.speed.min, LIMITS.speed.max);
+    singleSpeedEl.value = String(singleState.speedLevel);
+    singleSpeedLabel.textContent = String(singleState.speedLevel);
+    singleSpeedInlineValue.textContent = String(singleState.speedLevel);
+    updateSingleStats();
+    saveSettings();
+  });
 
   onlineModeSettingEl.addEventListener("change", () => {
     onlinePrefs.mode = normalizeMode(onlineModeSettingEl.value);
+    onlineModeQuickEl.value = onlinePrefs.mode;
     updateOnlineStaticTexts();
+    saveSettings();
+  });
+  onlineDifficultySettingEl.addEventListener("change", () => {
+    onlinePrefs.difficulty = ["easy", "mixed", "hard"].includes(onlineDifficultySettingEl.value)
+      ? onlineDifficultySettingEl.value
+      : "mixed";
+    onlineDifficultyQuickEl.value = onlinePrefs.difficulty;
     saveSettings();
   });
   onlineSpeedEl.addEventListener("input", () => {
@@ -1614,8 +1914,17 @@ function setupSettingsActions() {
     onlinePrefs.foodStyle = normalizeStyle({ foodStyle: onlineFoodStyleEl.value }).foodStyle;
     saveSettings();
   });
+  onlineFoodColorEl.addEventListener("change", () => {
+    onlinePrefs.foodColor = normalizeStyle({ foodColor: onlineFoodColorEl.value }).foodColor;
+    saveSettings();
+  });
   onlineGridColsEl.addEventListener("change", syncOnlineGridSettings);
   onlineGridRowsEl.addEventListener("change", syncOnlineGridSettings);
+  miniMapPositionEl.addEventListener("change", () => {
+    onlinePrefs.miniPosition = normalizeMiniPosition(miniMapPositionEl.value);
+    applyMiniPositionClass();
+    saveSettings();
+  });
 
   applyOnlineConfigBtn.addEventListener("click", applyOnlineConfigToRoom);
   applyOnlineStyleBtn.addEventListener("click", applyOnlineStyleToRoom);
@@ -1659,6 +1968,19 @@ function setupSingleActions() {
 }
 
 function setupOnlineActions() {
+  onlineModeQuickEl.addEventListener("change", () => {
+    onlinePrefs.mode = normalizeMode(onlineModeQuickEl.value);
+    onlineModeSettingEl.value = onlinePrefs.mode;
+    updateOnlineStaticTexts();
+    saveSettings();
+  });
+  onlineDifficultyQuickEl.addEventListener("change", () => {
+    onlinePrefs.difficulty = ["easy", "mixed", "hard"].includes(onlineDifficultyQuickEl.value)
+      ? onlineDifficultyQuickEl.value
+      : "mixed";
+    onlineDifficultySettingEl.value = onlinePrefs.difficulty;
+    saveSettings();
+  });
   createRoomBtn.addEventListener("click", handleCreateRoom);
   joinRoomBtn.addEventListener("click", handleJoinRoom);
   startMatchBtn.addEventListener("click", handleStartMatch);

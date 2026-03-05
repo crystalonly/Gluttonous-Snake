@@ -229,6 +229,41 @@ canvas {
   line-height: 1.35;
 }
 
+.single-quick-card {
+  margin-top: 10px;
+  border: 1px solid rgba(105, 158, 201, 0.34);
+  border-radius: 10px;
+  background: rgba(11, 26, 42, 0.76);
+  padding: 8px 10px;
+}
+
+.quick-speed-row {
+  margin-top: 4px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.quick-speed-row strong {
+  font-size: 17px;
+  color: var(--accent);
+}
+
+.quick-tags {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.quick-tags span {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 164, 206, 0.42);
+  background: rgba(24, 48, 71, 0.8);
+  color: #d6edff;
+  font-size: 12px;
+}
+
 .btn-row {
   margin-top: 10px;
   display: flex;
@@ -383,27 +418,67 @@ input[type="range"] {
   overflow: hidden;
 }
 
-.split-wrap {
+.separate-wrap {
   width: 100%;
   height: 100%;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 0;
 }
 
-.split-board {
+.separate-main {
   min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
-.split-board h3 {
+.separate-main h3 {
   margin: 0 0 6px;
   color: #d0ecff;
-  font-size: 15px;
+  font-size: 16px;
+}
+
+.separate-mini {
+  position: absolute;
+  top: 10px;
+  width: min(34%, 310px);
+  min-width: 190px;
+  border-radius: 10px;
+  border: 1px solid rgba(120, 174, 216, 0.54);
+  background: rgba(7, 18, 29, 0.86);
+  padding: 6px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
+}
+
+.separate-mini h4 {
+  margin: 2px 0 6px;
+  text-align: center;
+  color: #c4e6ff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mini-pos-right-top {
+  right: 10px;
+}
+
+.mini-pos-left-top {
+  left: 10px;
+}
+
+#onlineMainCanvas {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.24);
+}
+
+#onlineMiniCanvas {
+  width: 100%;
+  height: auto;
 }
 
 .online-bottom {
@@ -455,6 +530,29 @@ input[type="range"] {
 #resultText {
   margin-top: 6px;
   font-size: 17px;
+}
+
+.countdown-banner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, 82%);
+  border-radius: 14px;
+  border: 1px solid rgba(133, 197, 238, 0.72);
+  background: rgba(4, 14, 26, 0.9);
+  text-align: center;
+  padding: 14px 12px;
+  color: #d7f0ff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+}
+
+.countdown-banner strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 52px;
+  line-height: 1.05;
+  color: #9ff3ff;
 }
 
 .settings-modal {
@@ -570,15 +668,16 @@ input[type="range"] {
     grid-template-columns: 1fr;
   }
 
-  .split-wrap {
-    grid-template-columns: 1fr;
-  }
-
   .inline-fields {
     grid-template-columns: 1fr;
   }
 
   .settings-grid {
     grid-template-columns: 1fr;
+  }
+
+  .separate-mini {
+    min-width: 150px;
+    width: min(42%, 240px);
   }
 }

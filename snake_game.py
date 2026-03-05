@@ -832,53 +832,145 @@ class SnakeGame(QWidget):
             return
         self._set_game_over()
 
-    def _safe_revive_snake(self) -> None:
-        original_length = max(4, len(self.snake))
-        target_length = min(original_length, max(self.grid_cols, self.grid_rows) - 4)
-        previous_head = self.snake[0] if self.snake else (self.grid_cols // 2, self.grid_rows // 2)
-        candidates: list[tuple[float, list[tuple[int, int]], tuple[int, int]]] = []
+    def _revive_direction_from_segments(
+        self,
+        segments: list[tuple[int, int]],
+    ) -> tuple[int, int]:
+        if len(segments) < 2:
+            return (1, 0)
+        head_x, head_y = segments[0]
+        neck_x, neck_y = segments[1]
+        direction = (head_x - neck_x, head_y - neck_y)
+        if direction in {(1, 0), (-1, 0), (0, 1), (0, -1)}:
+            return direction
+        return (1, 0)
 
-        def add_candidate(segments: list[tuple[int, int]], direction: tuple[int, int]) -> None:
-            occupied = set(segments)
-            head_x, head_y = segments[0]
+    def _pick_safe_revive_direction(
+        self,
+        segments: list[tuple[int, int]],
+    ) -> tuple[int, int]:
+        if not segments:
+            return (1, 0)
+        head_x, head_y = segments[0]
+        occupied = set(segments)
+        tail = segments[-1]
+        options: list[tuple[float, tuple[int, int]]] = []
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx = head_x + dx
+            ny = head_y + dy
+            next_cell = (nx, ny)
+            if not (0 <= nx < self.grid_cols and 0 <= ny < self.grid_rows):
+                continue
+            if next_cell in occupied and next_cell != tail:
+                continue
+            free_neighbors = self._free_neighbor_count(next_cell, occupied)
             wall_distance = min(
-                head_x,
-                self.grid_cols - 1 - head_x,
-                head_y,
-                self.grid_rows - 1 - head_y,
+                nx,
+                self.grid_cols - 1 - nx,
+                ny,
+                self.grid_rows - 1 - ny,
             )
-            free_neighbors = self._free_neighbor_count((head_x, head_y), occupied)
-            head_distance = abs(head_x - previous_head[0]) + abs(head_y - previous_head[1])
-            score = wall_distance * 4.0 + free_neighbors * 3.0 + head_distance * 0.2
-            candidates.append((score, segments, direction))
+            forward_space = 0
+            for step in range(1, 4):
+                fx = head_x + dx * step
+                fy = head_y + dy * step
+                if not (0 <= fx < self.grid_cols and 0 <= fy < self.grid_rows):
+                    break
+                if (fx, fy) in occupied and (fx, fy) != tail:
+                    break
+                forward_space += 1
+            score = free_neighbors * 2.2 + wall_distance * 1.1 + forward_space * 1.6 + self.random.random() * 0.5
+            options.append((score, (dx, dy)))
 
-        for length in range(target_length, 3, -1):
-            row_choices = [self.grid_rows // 2, self.grid_rows // 2 - 4, self.grid_rows // 2 + 4]
-            col_choices = [self.grid_cols // 2, self.grid_cols // 2 - 4, self.grid_cols // 2 + 4]
+        if options:
+            options.sort(key=lambda item: item[0], reverse=True)
+            pool = options[: min(3, len(options))]
+            return self.random.choice(pool)[1]
+        return self._revive_direction_from_segments(segments)
 
-            if length <= self.grid_cols - 4:
-                left = (self.grid_cols - length) // 2
-                for y in row_choices:
-                    if 1 <= y <= self.grid_rows - 2:
-                        line = [(left + i, y) for i in range(length)]
-                        add_candidate(list(reversed(line)), (1, 0))
-                        add_candidate(line, (-1, 0))
+    def _build_random_revive_layout(
+        self,
+        target_length: int,
+        attempts: int = 320,
+    ) -> tuple[list[tuple[int, int]], tuple[int, int]] | None:
+        if target_length < 4:
+            return None
+        min_wall_distance = 2 if self.grid_cols >= 12 and self.grid_rows >= 12 else 1
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
-            if length <= self.grid_rows - 4:
-                top = (self.grid_rows - length) // 2
-                for x in col_choices:
-                    if 1 <= x <= self.grid_cols - 2:
-                        line = [(x, top + i) for i in range(length)]
-                        add_candidate(list(reversed(line)), (0, 1))
-                        add_candidate(line, (0, -1))
+        for _ in range(max(40, attempts)):
+            start = (
+                self.random.randrange(0, self.grid_cols),
+                self.random.randrange(0, self.grid_rows),
+            )
+            segments = [start]
+            occupied = {start}
 
-            if candidates:
+            while len(segments) < target_length:
+                tail_x, tail_y = segments[-1]
+                options: list[tuple[float, tuple[int, int]]] = []
+                for dx, dy in directions:
+                    nx = tail_x + dx
+                    ny = tail_y + dy
+                    next_cell = (nx, ny)
+                    if not (0 <= nx < self.grid_cols and 0 <= ny < self.grid_rows):
+                        continue
+                    if next_cell in occupied:
+                        continue
+
+                    probe_occupied = set(occupied)
+                    probe_occupied.add(next_cell)
+                    free_neighbors = self._free_neighbor_count(next_cell, probe_occupied)
+                    wall_distance = min(
+                        nx,
+                        self.grid_cols - 1 - nx,
+                        ny,
+                        self.grid_rows - 1 - ny,
+                    )
+                    score = free_neighbors * 2.4 + wall_distance * 0.9 + self.random.random() * 0.4
+                    options.append((score, next_cell))
+
+                if not options:
+                    break
+
+                options.sort(key=lambda item: item[0], reverse=True)
+                pool = options[: min(3, len(options))]
+                _, chosen = self.random.choice(pool)
+                segments.append(chosen)
+                occupied.add(chosen)
+
+            if len(segments) == target_length:
+                head_x, head_y = segments[0]
+                wall_distance = min(
+                    head_x,
+                    self.grid_cols - 1 - head_x,
+                    head_y,
+                    self.grid_rows - 1 - head_y,
+                )
+                if wall_distance < min_wall_distance:
+                    continue
+                nearby_body = 0
+                for body_x, body_y in segments[2:]:
+                    if abs(body_x - head_x) + abs(body_y - head_y) <= 2:
+                        nearby_body += 1
+                if nearby_body > 3:
+                    continue
+                return segments, self._pick_safe_revive_direction(segments)
+        return None
+
+    def _safe_revive_snake(self) -> None:
+        max_length = max(4, self.grid_cols * self.grid_rows - 1)
+        original_length = min(max_length, max(4, len(self.snake)))
+        revived_layout: tuple[list[tuple[int, int]], tuple[int, int]] | None = None
+
+        for length in range(original_length, 3, -1):
+            attempts = 620 if length > 90 else 420 if length > 55 else 280
+            revived_layout = self._build_random_revive_layout(length, attempts)
+            if revived_layout:
                 break
 
-        if candidates:
-            candidates.sort(key=lambda item: item[0], reverse=True)
-            pool = candidates[: min(6, len(candidates))]
-            _, segments, direction = self.random.choice(pool)
+        if revived_layout:
+            segments, direction = revived_layout
             self.snake = segments
             self.direction = direction
             self.next_direction = direction
