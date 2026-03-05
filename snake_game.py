@@ -400,9 +400,48 @@ class SnakeGame(QWidget):
             self._as_float(self.last_record.get("duration_sec", 0.0)),
         )
 
+        needs_score_migration = False
+        for item in self.history:
+            item_length = max(1, self._as_int(item.get("length", 4), 4))
+            item_score = max(0, self._as_int(item.get("score", 0), 0))
+            if item_score > item_length:
+                item["score"] = item_length
+                needs_score_migration = True
+
+            item_best = self._as_int(item.get("best_score", item_length), item_length)
+            if item_best > item_length:
+                item["best_score"] = item_length
+                needs_score_migration = True
+
+        if self.best_score > self.best_length:
+            needs_score_migration = True
+        if self.last_score > self.last_length:
+            needs_score_migration = True
+        if self._as_int(self.last_record.get("score", 0), 0) > self._as_int(
+            self.last_record.get("length", self.last_length),
+            self.last_length,
+        ):
+            needs_score_migration = True
+
+        if needs_score_migration:
+            self.best_score = self.best_length
+            self.last_score = min(self.last_score, self.last_length)
+            last_record_length = max(
+                1,
+                self._as_int(self.last_record.get("length", self.last_length), self.last_length),
+            )
+            self.last_record["length"] = last_record_length
+            self.last_record["score"] = min(
+                self._as_int(self.last_record.get("score", self.last_score), self.last_score),
+                last_record_length,
+            )
+            self.last_record["best_score"] = self.best_score
+            self.total_score = sum(self._as_int(item.get("score", 0), 0) for item in self.history)
+            self._save_records()
+
     def _save_records(self) -> None:
         payload = {
-            "version": 3,
+            "version": 4,
             "stats": {
                 "best_score": self.best_score,
                 "best_length": self.best_length,
@@ -999,7 +1038,12 @@ class SnakeGame(QWidget):
         painter.setBrush(fill)
         painter.drawRoundedRect(rect, 8, 8)
 
-        font_size = 11 if rect.height() <= 34 else 12
+        if min(rect.width(), rect.height()) <= 28:
+            font_size = 9
+        elif rect.height() <= 34:
+            font_size = 10
+        else:
+            font_size = 12
         painter.setFont(QFont("Avenir Next", font_size, QFont.DemiBold))
         painter.setPen(QColor("#E8FCFF"))
         painter.drawText(rect, Qt.AlignCenter, text)
@@ -1301,15 +1345,15 @@ class SnakeGame(QWidget):
         painter.setFont(QFont("Avenir Next", 11, QFont.DemiBold))
         painter.setPen(QColor("#9CC6D8"))
         painter.drawText(
-            QRectF(button_x, button_y + 148, button_w, 22),
+            QRectF(button_x, button_y + 162, button_w, 22),
             Qt.AlignCenter,
             self._t("controls"),
         )
 
-        pad_size = 26
-        pad_gap = 6
+        pad_size = 20
+        pad_gap = 4
         pad_center_x = button_x + button_w / 2
-        pad_top = button_y + 176
+        pad_top = button_y + 188
         up_rect = QRectF(pad_center_x - pad_size / 2, pad_top, pad_size, pad_size)
         left_rect = QRectF(
             pad_center_x - pad_size - pad_gap,
@@ -1330,14 +1374,14 @@ class SnakeGame(QWidget):
             pad_size,
         )
 
-        self._draw_button(painter, "dir_up", up_rect, self._t("up"))
-        self._draw_button(painter, "dir_left", left_rect, self._t("left"))
-        self._draw_button(painter, "dir_right", right_rect, self._t("right"))
-        self._draw_button(painter, "dir_down", down_rect, self._t("down"))
+        self._draw_button(painter, "dir_up", up_rect, "^")
+        self._draw_button(painter, "dir_left", left_rect, "<")
+        self._draw_button(painter, "dir_right", right_rect, ">")
+        self._draw_button(painter, "dir_down", down_rect, "v")
 
         painter.setFont(QFont("Avenir Next", 9))
         painter.setPen(QColor("#88B6CB"))
-        hint_y = self.panel_y + self.panel_height - 40
+        hint_y = self.panel_y + self.panel_height - 36
         painter.drawText(
             QRectF(button_x, hint_y, button_w, 18),
             Qt.AlignCenter,
@@ -1411,17 +1455,18 @@ class SnakeGame(QWidget):
         painter.setBrush(QColor("#102433"))
         painter.drawRoundedRect(row_rect, 10, 10)
 
+        next_rect = QRectF(row_rect.right() - 34, row_rect.y() + 7, 34, 32)
+        value_rect = QRectF(next_rect.x() - 158, row_rect.y() + 7, 150, 32)
+        prev_rect = QRectF(value_rect.x() - 42, row_rect.y() + 7, 34, 32)
+        label_width = max(80.0, prev_rect.x() - row_rect.x() - 28)
+
         painter.setFont(QFont("Avenir Next", 12, QFont.Bold))
         painter.setPen(QColor("#9CC6D8"))
         painter.drawText(
-            QRectF(row_rect.x() + 16, row_rect.y(), 180, row_rect.height()),
+            QRectF(row_rect.x() + 16, row_rect.y(), label_width, row_rect.height()),
             Qt.AlignLeft | Qt.AlignVCenter,
             label,
         )
-
-        prev_rect = QRectF(row_rect.right() - 200, row_rect.y() + 7, 34, 32)
-        value_rect = QRectF(row_rect.right() - 162, row_rect.y() + 7, 124, 32)
-        next_rect = QRectF(row_rect.right() - 34, row_rect.y() + 7, 34, 32)
 
         self._draw_button(painter, prev_key, prev_rect, "<")
         self._draw_button(painter, next_key, next_rect, ">")
@@ -1437,7 +1482,7 @@ class SnakeGame(QWidget):
         painter.fillRect(self.rect(), QColor(3, 12, 18, 168))
 
         modal_w = 640
-        modal_h = 442
+        modal_h = 480
         mx = (self.window_width - modal_w) / 2
         my = (self.window_height - modal_h) / 2
         modal = QRectF(mx, my, modal_w, modal_h)
@@ -1458,7 +1503,7 @@ class SnakeGame(QWidget):
         self._draw_button(painter, "settings_close", close_rect, self._t("close"))
 
         row_y = my + 82
-        row_gap = 54
+        row_gap = 56
         self._draw_setting_row(
             painter,
             row_y,
@@ -1500,14 +1545,15 @@ class SnakeGame(QWidget):
             "settings_food_next",
         )
 
-        speed_label_rect = QRectF(mx + 28, my + modal_h - 102, 180, 44)
+        speed_top = row_y + row_gap * 5 + 10
+        speed_label_rect = QRectF(mx + 28, speed_top, 180, 36)
         painter.setFont(QFont("Avenir Next", 12, QFont.Bold))
         painter.setPen(QColor("#9CC6D8"))
         painter.drawText(speed_label_rect, Qt.AlignLeft | Qt.AlignVCenter, self._t("speed"))
 
-        minus_rect = QRectF(mx + modal_w - 200, my + modal_h - 95, 34, 32)
-        value_rect = QRectF(mx + modal_w - 162, my + modal_h - 95, 124, 32)
-        plus_rect = QRectF(mx + modal_w - 34, my + modal_h - 95, 34, 32)
+        minus_rect = QRectF(mx + modal_w - 200, speed_top + 2, 34, 32)
+        value_rect = QRectF(mx + modal_w - 162, speed_top + 2, 124, 32)
+        plus_rect = QRectF(mx + modal_w - 34, speed_top + 2, 34, 32)
 
         self._draw_button(painter, "settings_speed_minus", minus_rect, "-")
         self._draw_button(painter, "settings_speed_plus", plus_rect, "+")
@@ -1526,7 +1572,7 @@ class SnakeGame(QWidget):
         painter.setFont(QFont("Avenir Next", 10))
         painter.setPen(QColor("#88B6CB"))
         painter.drawText(
-            QRectF(mx + 28, my + modal_h - 44, modal_w - 56, 20),
+            QRectF(mx + 28, my + modal_h - 36, modal_w - 56, 20),
             Qt.AlignCenter,
             self._t("settings_hint"),
         )
