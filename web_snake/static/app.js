@@ -40,6 +40,7 @@ const SNAKE_SHAPES = new Set(["rounded", "square", "circle", "diamond"]);
 const FOOD_STYLES = new Set(["orb", "crystal", "star", "ring"]);
 const FOOD_COLOR_STYLES = new Set(["classic", "mint", "violet", "sun"]);
 const MODES = new Set(["separate", "arena"]);
+const THEMES = new Set(["default", "aurora", "mist", "dawn", "mono"]);
 
 const I18N = {
   zh: {
@@ -56,8 +57,8 @@ const I18N = {
     theme: "主题",
     theme_default: "深海霓虹",
     theme_aurora: "极光青",
-    theme_forest: "森林夜",
-    theme_sunset: "晚霞橙",
+    theme_mist: "雾蓝晨光",
+    theme_dawn: "柔粉晨曦",
     theme_mono: "石墨灰",
     lang_zh: "中文",
     lang_en: "英文",
@@ -173,8 +174,8 @@ const I18N = {
     theme: "Theme",
     theme_default: "Neon Sea",
     theme_aurora: "Aurora Cyan",
-    theme_forest: "Forest Night",
-    theme_sunset: "Sunset Amber",
+    theme_mist: "Mist Blue",
+    theme_dawn: "Soft Dawn",
     theme_mono: "Graphite",
     lang_zh: "Chinese",
     lang_en: "English",
@@ -290,8 +291,8 @@ const I18N = {
     theme: "テーマ",
     theme_default: "ネオン深海",
     theme_aurora: "オーロラ",
-    theme_forest: "フォレスト",
-    theme_sunset: "夕焼け",
+    theme_mist: "ミストブルー",
+    theme_dawn: "ソフトドーン",
     theme_mono: "グラファイト",
     lang_zh: "中国語",
     lang_en: "英語",
@@ -601,6 +602,12 @@ function normalizeMiniPosition(value) {
   return value === "right-top" ? "right-top" : "left-top";
 }
 
+function normalizeTheme(value) {
+  if (value === "forest") return "mist";
+  if (value === "sunset") return "dawn";
+  return THEMES.has(value) ? value : "default";
+}
+
 function normalizeStyle(style) {
   const source = style && typeof style === "object" ? style : {};
   const snakeColor = typeof source.snakeColor === "string" && SNAKE_PALETTES[source.snakeColor] ? source.snakeColor : "neon";
@@ -637,8 +644,7 @@ function isOpposite(a, b) {
 }
 
 function applyThemeToDom() {
-  const allowed = new Set(["default", "aurora", "forest", "sunset", "mono"]);
-  const theme = allowed.has(uiState.theme) ? uiState.theme : "default";
+  const theme = normalizeTheme(uiState.theme);
   uiState.theme = theme;
   document.documentElement.setAttribute("data-theme", theme);
 }
@@ -680,7 +686,7 @@ function loadSettings() {
   try {
     const data = JSON.parse(raw);
     uiState.language = ["zh", "en", "ja"].includes(data.language) ? data.language : uiState.language;
-    uiState.theme = ["default", "aurora", "forest", "sunset", "mono"].includes(data.theme) ? data.theme : uiState.theme;
+    uiState.theme = normalizeTheme(typeof data.theme === "string" ? data.theme : uiState.theme);
     uiState.viewScale = clamp(intOr(data.viewScale, uiState.viewScale), LIMITS.viewScale.min, LIMITS.viewScale.max);
     uiState.cellSize = clamp(intOr(data.cellSize, uiState.cellSize), LIMITS.cellSize.min, LIMITS.cellSize.max);
 
@@ -2054,9 +2060,7 @@ function setupSettingsActions() {
   });
 
   themeSelect.addEventListener("change", () => {
-    uiState.theme = ["default", "aurora", "forest", "sunset", "mono"].includes(themeSelect.value)
-      ? themeSelect.value
-      : "default";
+    uiState.theme = normalizeTheme(themeSelect.value);
     applyThemeToDom();
     saveSettings();
   });
