@@ -719,7 +719,7 @@ class SnakeGame(QWidget):
 
         self.snake.insert(0, next_head)
         if is_growing:
-            self.score += 10
+            self.score += 1
             self.food_eaten += 1
             self.food = self._spawn_food()
             self._recalculate_interval()
@@ -1301,7 +1301,7 @@ class SnakeGame(QWidget):
         painter.setFont(QFont("Avenir Next", 11, QFont.DemiBold))
         painter.setPen(QColor("#9CC6D8"))
         painter.drawText(
-            QRectF(button_x, button_y + 160, button_w, 22),
+            QRectF(button_x, button_y + 148, button_w, 22),
             Qt.AlignCenter,
             self._t("controls"),
         )
@@ -1309,7 +1309,7 @@ class SnakeGame(QWidget):
         pad_size = 26
         pad_gap = 6
         pad_center_x = button_x + button_w / 2
-        pad_top = button_y + 172
+        pad_top = button_y + 176
         up_rect = QRectF(pad_center_x - pad_size / 2, pad_top, pad_size, pad_size)
         left_rect = QRectF(
             pad_center_x - pad_size - pad_gap,
@@ -1350,23 +1350,7 @@ class SnakeGame(QWidget):
         )
 
     def _draw_effect(self, painter: QPainter, now: float) -> None:
-        if now > self.effect_until:
-            return
-        ratio = (self.effect_until - now) / 0.12
-        board_rect = self._board_rect()
-
-        center = self._food_center()
-        glow_radius = self.cell_size * (1.8 + ratio * 1.1)
-        glow = QRadialGradient(center, glow_radius)
-        glow.setColorAt(0, QColor(147, 220, 236, int(62 * ratio)))
-        glow.setColorAt(1, QColor(147, 220, 236, 0))
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(glow)
-        painter.drawEllipse(center, glow_radius, glow_radius)
-
-        painter.setPen(QPen(QColor(128, 206, 224, int(40 * ratio)), 1.5))
-        painter.setBrush(Qt.NoBrush)
-        painter.drawRoundedRect(board_rect.adjusted(1.5, 1.5, -1.5, -1.5), 12, 12)
+        return
 
     def _draw_overlay(self, painter: QPainter) -> None:
         if self.state == "running" or self.settings_open:
