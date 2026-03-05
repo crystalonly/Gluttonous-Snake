@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 
 from PyQt5.QtCore import QPointF, QRectF, Qt, QTimer
-from PyQt5.QtGui import QColor, QFont, QLinearGradient, QPainter, QPen, QRadialGradient
+from PyQt5.QtGui import QColor, QFont, QLinearGradient, QPainter, QPen, QPolygonF, QRadialGradient
 from PyQt5.QtWidgets import QApplication, QWidget
 
 
@@ -33,15 +33,28 @@ class SnakeGame(QWidget):
         self.panel_height = self.window_height - self.panel_y - 28
 
         self.languages = ["en", "zh", "ja"]
+        self.difficulty_levels = ["easy", "mixed", "hard"]
+        self.snake_color_styles = ["neon", "forest", "sunset", "glacier"]
+        self.snake_shape_styles = ["rounded", "square", "circle", "diamond"]
+        self.food_styles = ["orb", "crystal", "star", "ring"]
+
         self.language = "en"
+        self.difficulty = "mixed"
+        self.speed_level = 5
+        self.snake_color_style = "neon"
+        self.snake_shape_style = "rounded"
+        self.food_style = "orb"
+
         self.texts = {
             "en": {
                 "window_title": "Neon Snake",
                 "game_title": "NEON SNAKE",
                 "score": "Score",
-                "best": "Best",
+                "best_score": "Best Score",
                 "length": "Length",
+                "best_length": "Best Length",
                 "speed": "Speed",
+                "difficulty": "Difficulty",
                 "games": "Games",
                 "last": "Last",
                 "controls": "Controls",
@@ -49,19 +62,41 @@ class SnakeGame(QWidget):
                 "pause": "Pause",
                 "resume": "Resume",
                 "restart": "Restart",
+                "settings": "Settings",
+                "close": "Close",
                 "language": "Language",
+                "snake_color": "Snake Color",
+                "snake_shape": "Snake Shape",
+                "food_style": "Food Style",
                 "speed_level": "Level",
                 "mouse_hint": "Mouse: click board or arrows to steer",
-                "keys_hint": "Keys: WASD/Arrows, Space, R, L, +/-",
+                "keys_hint": "Keys: WASD/Arrows, Space, R, O, +/-",
+                "settings_hint": "Setting Keys: L/D/C/H/F and +/-",
                 "ready_title": "Ready?",
                 "ready_subtitle": "Press Enter / Space / Arrow or Click Start",
                 "paused_title": "Paused",
                 "paused_subtitle": "Press Space or Click Resume",
                 "over_title": "Game Over",
                 "over_subtitle": "Press R / Enter or Click Restart",
+                "settings_title": "Game Settings",
+                "difficulty_easy": "Beginner",
+                "difficulty_mixed": "Advanced",
+                "difficulty_hard": "Hardcore",
                 "lang_en": "English",
                 "lang_zh": "Chinese",
                 "lang_ja": "Japanese",
+                "snake_color_neon": "Neon Cyan",
+                "snake_color_forest": "Forest Green",
+                "snake_color_sunset": "Sunset Orange",
+                "snake_color_glacier": "Glacier Blue",
+                "snake_shape_rounded": "Rounded",
+                "snake_shape_square": "Square",
+                "snake_shape_circle": "Circle",
+                "snake_shape_diamond": "Diamond",
+                "food_style_orb": "Orb",
+                "food_style_crystal": "Crystal",
+                "food_style_star": "Star",
+                "food_style_ring": "Ring",
                 "up": "UP",
                 "down": "DOWN",
                 "left": "LEFT",
@@ -70,30 +105,54 @@ class SnakeGame(QWidget):
             "zh": {
                 "window_title": "霓虹贪吃蛇",
                 "game_title": "霓虹贪吃蛇",
-                "score": "分数",
-                "best": "最高",
-                "length": "蛇长",
-                "speed": "速度",
-                "games": "局数",
-                "last": "上局",
+                "score": "当前分数",
+                "best_score": "历史最高分",
+                "length": "当前蛇长",
+                "best_length": "历史最长",
+                "speed": "速度档位",
+                "difficulty": "难度",
+                "games": "累计局数",
+                "last": "上局(分/长)",
                 "controls": "操作",
                 "start": "开始",
                 "pause": "暂停",
                 "resume": "继续",
                 "restart": "重开",
+                "settings": "设置",
+                "close": "关闭",
                 "language": "语言",
+                "snake_color": "蛇身配色",
+                "snake_shape": "蛇身形状",
+                "food_style": "豆子样式",
                 "speed_level": "档位",
-                "mouse_hint": "鼠标: 点击棋盘或方向键控制",
-                "keys_hint": "键盘: WASD/方向键, 空格, R, L, +/-",
+                "mouse_hint": "鼠标: 点击棋盘或方向按钮控制",
+                "keys_hint": "键盘: WASD/方向键, 空格, R, O, +/-",
+                "settings_hint": "设置快捷键: L/D/C/H/F 及 +/-",
                 "ready_title": "准备开始?",
-                "ready_subtitle": "按 Enter / 空格 / 方向键 或点击开始",
+                "ready_subtitle": "按 Enter/空格/方向键 或点击开始",
                 "paused_title": "已暂停",
                 "paused_subtitle": "按空格或点击继续",
                 "over_title": "游戏结束",
-                "over_subtitle": "按 R / Enter 或点击重开",
+                "over_subtitle": "按 R/Enter 或点击重开",
+                "settings_title": "游戏设置",
+                "difficulty_easy": "入门",
+                "difficulty_mixed": "进阶",
+                "difficulty_hard": "困难",
                 "lang_en": "英文",
                 "lang_zh": "中文",
                 "lang_ja": "日文",
+                "snake_color_neon": "霓虹青",
+                "snake_color_forest": "森林绿",
+                "snake_color_sunset": "落日橙",
+                "snake_color_glacier": "冰川蓝",
+                "snake_shape_rounded": "圆角块",
+                "snake_shape_square": "方块",
+                "snake_shape_circle": "圆形",
+                "snake_shape_diamond": "菱形",
+                "food_style_orb": "光球",
+                "food_style_crystal": "水晶",
+                "food_style_star": "星芒",
+                "food_style_ring": "光环",
                 "up": "上",
                 "down": "下",
                 "left": "左",
@@ -102,35 +161,66 @@ class SnakeGame(QWidget):
             "ja": {
                 "window_title": "ネオンスネーク",
                 "game_title": "ネオンスネーク",
-                "score": "スコア",
-                "best": "ベスト",
-                "length": "長さ",
-                "speed": "速度",
-                "games": "回数",
-                "last": "前回",
+                "score": "現在スコア",
+                "best_score": "最高スコア",
+                "length": "現在の長さ",
+                "best_length": "最長記録",
+                "speed": "速度レベル",
+                "difficulty": "難易度",
+                "games": "プレイ回数",
+                "last": "前回(点/長さ)",
                 "controls": "操作",
                 "start": "開始",
                 "pause": "一時停止",
                 "resume": "再開",
                 "restart": "リスタート",
+                "settings": "設定",
+                "close": "閉じる",
                 "language": "言語",
+                "snake_color": "ヘビの色",
+                "snake_shape": "ヘビの形",
+                "food_style": "エサスタイル",
                 "speed_level": "レベル",
-                "mouse_hint": "マウス: 盤面/矢印をクリックして操作",
-                "keys_hint": "キー: WASD/矢印, Space, R, L, +/-",
+                "mouse_hint": "マウス: 盤面/矢印ボタンで操作",
+                "keys_hint": "キー: WASD/矢印, Space, R, O, +/-",
+                "settings_hint": "設定キー: L/D/C/H/F と +/-",
                 "ready_title": "準備OK?",
                 "ready_subtitle": "Enter/Space/矢印 または 開始をクリック",
                 "paused_title": "一時停止中",
                 "paused_subtitle": "Space または 再開をクリック",
                 "over_title": "ゲームオーバー",
-                "over_subtitle": "R / Enter または リスタートをクリック",
+                "over_subtitle": "R/Enter または リスタートをクリック",
+                "settings_title": "ゲーム設定",
+                "difficulty_easy": "ビギナー",
+                "difficulty_mixed": "アドバンス",
+                "difficulty_hard": "ハード",
                 "lang_en": "英語",
                 "lang_zh": "中国語",
                 "lang_ja": "日本語",
+                "snake_color_neon": "ネオンシアン",
+                "snake_color_forest": "フォレストグリーン",
+                "snake_color_sunset": "サンセットオレンジ",
+                "snake_color_glacier": "グレイシャーブルー",
+                "snake_shape_rounded": "ラウンド",
+                "snake_shape_square": "スクエア",
+                "snake_shape_circle": "サークル",
+                "snake_shape_diamond": "ダイヤ",
+                "food_style_orb": "オーブ",
+                "food_style_crystal": "クリスタル",
+                "food_style_star": "スター",
+                "food_style_ring": "リング",
                 "up": "UP",
                 "down": "DOWN",
                 "left": "LEFT",
                 "right": "RIGHT",
             },
+        }
+
+        self.snake_palettes = {
+            "neon": (QColor("#7CF9FF"), QColor("#0E4F74")),
+            "forest": (QColor("#86FFBE"), QColor("#1B6D46")),
+            "sunset": (QColor("#FFD39A"), QColor("#CB5D34")),
+            "glacier": (QColor("#B5E7FF"), QColor("#2C74A5")),
         }
 
         self.random = random.Random()
@@ -140,30 +230,37 @@ class SnakeGame(QWidget):
         self.next_direction = (1, 0)
         self.food = (0, 0)
         self.score = 0
-        self.best_score = 0
+        self.food_eaten = 0
         self.move_interval_ms = 130
         self.last_move_time = time.monotonic()
         self.effect_until = 0.0
-        self.food_eaten = 0
-        self.speed_level = 5
+        self.session_recorded = False
+        self.game_start_time = time.monotonic()
+
+        self.best_score = 0
+        self.best_length = 4
+        self.games_played = 0
+        self.total_score = 0
+        self.last_score = 0
+        self.last_length = 4
+        self.last_duration_sec = 0.0
 
         self.records_file = Path(__file__).with_name(".snake_records.json")
         self.legacy_best_file = Path(__file__).with_name(".snake_best_score")
         self.history: list[dict[str, object]] = []
-        self.games_played = 0
         self.last_record: dict[str, object] = {
             "timestamp": "",
             "score": 0,
-            "best": 0,
+            "best_score": 0,
             "length": 4,
             "duration_sec": 0.0,
             "speed_level": self.speed_level,
-            "reason": "none",
+            "difficulty": self.difficulty,
             "language": self.language,
         }
-        self.session_recorded = False
-        self.game_start_time = time.monotonic()
 
+        self.settings_open = False
+        self.settings_prev_state = "ready"
         self.click_regions: dict[str, QRectF] = {}
 
         self._load_records()
@@ -199,11 +296,11 @@ class SnakeGame(QWidget):
         return {
             "timestamp": str(raw.get("timestamp", "")),
             "score": max(0, self._as_int(raw.get("score", 0))),
-            "best": max(0, self._as_int(raw.get("best", self.best_score))),
+            "best_score": max(0, self._as_int(raw.get("best_score", raw.get("best", 0)))),
             "length": max(1, self._as_int(raw.get("length", 4))),
             "duration_sec": max(0.0, self._as_float(raw.get("duration_sec", 0.0))),
-            "speed_level": min(9, max(1, self._as_int(raw.get("speed_level", 5)))),
-            "reason": str(raw.get("reason", "none")),
+            "speed_level": min(9, max(1, self._as_int(raw.get("speed_level", self.speed_level)))),
+            "difficulty": str(raw.get("difficulty", self.difficulty)),
             "language": str(raw.get("language", self.language)),
         }
 
@@ -217,6 +314,41 @@ class SnakeGame(QWidget):
             except (OSError, json.JSONDecodeError):
                 payload = {}
 
+        settings = payload.get("settings", {})
+        if isinstance(settings, dict):
+            loaded_language = str(settings.get("language", self.language))
+            if loaded_language in self.languages:
+                self.language = loaded_language
+
+            loaded_speed = self._as_int(settings.get("speed_level", self.speed_level))
+            self.speed_level = min(9, max(1, loaded_speed))
+
+            loaded_difficulty = str(settings.get("difficulty", self.difficulty))
+            if loaded_difficulty in self.difficulty_levels:
+                self.difficulty = loaded_difficulty
+
+            loaded_color = str(settings.get("snake_color_style", self.snake_color_style))
+            if loaded_color in self.snake_color_styles:
+                self.snake_color_style = loaded_color
+
+            loaded_shape = str(settings.get("snake_shape_style", self.snake_shape_style))
+            if loaded_shape in self.snake_shape_styles:
+                self.snake_shape_style = loaded_shape
+
+            loaded_food = str(settings.get("food_style", self.food_style))
+            if loaded_food in self.food_styles:
+                self.food_style = loaded_food
+
+        raw_history = payload.get("history", [])
+        if isinstance(raw_history, list):
+            for item in raw_history[-300:]:
+                if isinstance(item, dict):
+                    self.history.append(self._normalize_record(item))
+        self.history = self.history[-200:]
+
+        stats = payload.get("stats", {})
+        stats = stats if isinstance(stats, dict) else {}
+
         legacy_best = 0
         if self.legacy_best_file.exists():
             try:
@@ -224,42 +356,70 @@ class SnakeGame(QWidget):
             except (OSError, ValueError):
                 legacy_best = 0
 
-        self.best_score = max(legacy_best, self._as_int(payload.get("best_score", 0)))
+        history_best_score = max((self._as_int(item.get("score", 0)) for item in self.history), default=0)
+        history_best_length = max((self._as_int(item.get("length", 4)) for item in self.history), default=4)
+        history_total_score = sum(self._as_int(item.get("score", 0)) for item in self.history)
 
-        settings = payload.get("settings", {})
-        if isinstance(settings, dict):
-            loaded_language = str(settings.get("language", self.language))
-            if loaded_language in self.languages:
-                self.language = loaded_language
-            loaded_speed = self._as_int(settings.get("speed_level", self.speed_level))
-            self.speed_level = min(9, max(1, loaded_speed))
-
-        raw_history = payload.get("history", [])
-        if isinstance(raw_history, list):
-            for item in raw_history[-300:]:
-                if isinstance(item, dict):
-                    self.history.append(self._normalize_record(item))
-            self.history = self.history[-200:]
-
-        self.games_played = max(
-            len(self.history),
-            self._as_int(payload.get("games_played", len(self.history))),
+        raw_best_score = max(
+            self._as_int(stats.get("best_score", 0)),
+            self._as_int(payload.get("best_score", 0)),
         )
+        self.best_score = max(legacy_best, raw_best_score, history_best_score)
 
-        raw_last = payload.get("last_record")
-        if isinstance(raw_last, dict):
-            self.last_record = self._normalize_record(raw_last)
+        raw_best_length = self._as_int(stats.get("best_length", payload.get("best_length", 4)))
+        self.best_length = max(4, raw_best_length, history_best_length)
+
+        raw_games = max(
+            self._as_int(stats.get("games_played", 0)),
+            self._as_int(payload.get("games_played", 0)),
+        )
+        self.games_played = max(len(self.history), raw_games)
+
+        raw_total = self._as_int(stats.get("total_score", payload.get("total_score", 0)))
+        self.total_score = max(history_total_score, raw_total)
+
+        raw_last_record = payload.get("last_record")
+        if isinstance(raw_last_record, dict):
+            self.last_record = self._normalize_record(raw_last_record)
         elif self.history:
             self.last_record = self.history[-1]
 
+        if self.history and not self.last_record.get("timestamp"):
+            self.last_record = self.history[-1]
+
+        self.last_score = self._as_int(
+            stats.get("last_score", self.last_record.get("score", 0)),
+            self._as_int(self.last_record.get("score", 0)),
+        )
+        self.last_length = self._as_int(
+            stats.get("last_length", self.last_record.get("length", 4)),
+            self._as_int(self.last_record.get("length", 4)),
+        )
+        self.last_duration_sec = self._as_float(
+            stats.get("last_duration_sec", self.last_record.get("duration_sec", 0.0)),
+            self._as_float(self.last_record.get("duration_sec", 0.0)),
+        )
+
     def _save_records(self) -> None:
         payload = {
-            "best_score": self.best_score,
-            "games_played": self.games_played,
+            "version": 3,
+            "stats": {
+                "best_score": self.best_score,
+                "best_length": self.best_length,
+                "games_played": self.games_played,
+                "total_score": self.total_score,
+                "last_score": self.last_score,
+                "last_length": self.last_length,
+                "last_duration_sec": round(self.last_duration_sec, 2),
+            },
             "last_record": self.last_record,
             "settings": {
                 "language": self.language,
                 "speed_level": self.speed_level,
+                "difficulty": self.difficulty,
+                "snake_color_style": self.snake_color_style,
+                "snake_shape_style": self.snake_shape_style,
+                "food_style": self.food_style,
             },
             "current": {
                 "score": self.score,
@@ -268,6 +428,7 @@ class SnakeGame(QWidget):
             },
             "history": self.history[-200:],
         }
+
         try:
             self.records_file.write_text(
                 json.dumps(payload, ensure_ascii=False, indent=2),
@@ -281,11 +442,49 @@ class SnakeGame(QWidget):
         except OSError:
             pass
 
+    def _cycle_option(self, attr: str, options: list[str], delta: int = 1) -> None:
+        current = getattr(self, attr)
+        try:
+            index = options.index(current)
+        except ValueError:
+            index = 0
+        setattr(self, attr, options[(index + delta) % len(options)])
+
+    def _cycle_language(self, delta: int = 1) -> None:
+        self._cycle_option("language", self.languages, delta)
+        self.setWindowTitle(self._t("window_title"))
+        self._save_records()
+
+    def _cycle_difficulty(self, delta: int = 1) -> None:
+        self._cycle_option("difficulty", self.difficulty_levels, delta)
+        self._recalculate_interval()
+        self._save_records()
+
+    def _cycle_snake_color(self, delta: int = 1) -> None:
+        self._cycle_option("snake_color_style", self.snake_color_styles, delta)
+        self._save_records()
+
+    def _cycle_snake_shape(self, delta: int = 1) -> None:
+        self._cycle_option("snake_shape_style", self.snake_shape_styles, delta)
+        self._save_records()
+
+    def _cycle_food_style(self, delta: int = 1) -> None:
+        self._cycle_option("food_style", self.food_styles, delta)
+        self._save_records()
+
+    def _difficulty_speed_offset(self) -> int:
+        if self.difficulty == "easy":
+            return 22
+        if self.difficulty == "hard":
+            return -18
+        return 0
+
     def _base_interval_for_speed(self) -> int:
         return 178 - (self.speed_level - 1) * 12
 
     def _recalculate_interval(self) -> None:
-        self.move_interval_ms = max(58, self._base_interval_for_speed() - self.food_eaten * 2)
+        base = self._base_interval_for_speed() + self._difficulty_speed_offset()
+        self.move_interval_ms = max(54, base - self.food_eaten * 2)
 
     def _change_speed(self, delta: int) -> None:
         new_level = min(9, max(1, self.speed_level + delta))
@@ -295,21 +494,122 @@ class SnakeGame(QWidget):
         self._recalculate_interval()
         self._save_records()
 
-    def _cycle_language(self) -> None:
-        current_index = self.languages.index(self.language)
-        self.language = self.languages[(current_index + 1) % len(self.languages)]
-        self.setWindowTitle(self._t("window_title"))
-        self._save_records()
+    def _free_neighbor_count(
+        self,
+        position: tuple[int, int],
+        occupied: set[tuple[int, int]],
+    ) -> int:
+        x, y = position
+        count = 0
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx = x + dx
+            ny = y + dy
+            if 0 <= nx < self.grid_cols and 0 <= ny < self.grid_rows and (nx, ny) not in occupied:
+                count += 1
+        return count
+
+    def _nearby_body_count(self, position: tuple[int, int]) -> int:
+        x, y = position
+        count = 0
+        for body_x, body_y in self.snake[1:]:
+            if abs(body_x - x) + abs(body_y - y) <= 2:
+                count += 1
+        return count
+
+    def _easy_food_score(
+        self,
+        position: tuple[int, int],
+        occupied: set[tuple[int, int]],
+    ) -> float:
+        x, y = position
+        wall_distance = min(x, self.grid_cols - 1 - x, y, self.grid_rows - 1 - y)
+        free_neighbors = self._free_neighbor_count(position, occupied)
+        nearby_body = self._nearby_body_count(position)
+        head_x, head_y = self.snake[0]
+        head_distance = abs(x - head_x) + abs(y - head_y)
+        return (
+            wall_distance * 3.8
+            + free_neighbors * 3.0
+            - nearby_body * 2.8
+            - abs(head_distance - 9) * 0.35
+        )
+
+    def _hard_food_score(
+        self,
+        position: tuple[int, int],
+        occupied: set[tuple[int, int]],
+    ) -> float:
+        x, y = position
+        wall_distance = min(x, self.grid_cols - 1 - x, y, self.grid_rows - 1 - y)
+        free_neighbors = self._free_neighbor_count(position, occupied)
+        nearby_body = self._nearby_body_count(position)
+        head_x, head_y = self.snake[0]
+        head_distance = abs(x - head_x) + abs(y - head_y)
+        wall_pressure = 6 - min(6, wall_distance)
+        return (
+            wall_pressure * 3.6
+            + nearby_body * 3.0
+            + max(0, 9 - head_distance) * 1.4
+            - free_neighbors * 1.8
+        )
+
+    def _pick_scored_position(
+        self,
+        free_positions: list[tuple[int, int]],
+        score_fn,
+        occupied: set[tuple[int, int]],
+        top_ratio: float,
+    ) -> tuple[int, int]:
+        scored = [(score_fn(pos, occupied), pos) for pos in free_positions]
+        scored.sort(key=lambda item: item[0], reverse=True)
+        take = max(1, int(len(scored) * top_ratio))
+        pool = [position for _, position in scored[:take]]
+        return self.random.choice(pool)
 
     def _spawn_food(self) -> tuple[int, int]:
+        free_positions = [
+            (x, y)
+            for x in range(self.grid_cols)
+            for y in range(self.grid_rows)
+            if (x, y) not in self.snake
+        ]
+        if not free_positions:
+            return 0, 0
+        if len(free_positions) == 1:
+            return free_positions[0]
+
         occupied = set(self.snake)
-        while True:
-            position = (
-                self.random.randrange(self.grid_cols),
-                self.random.randrange(self.grid_rows),
+        if self.difficulty == "easy":
+            return self._pick_scored_position(
+                free_positions,
+                self._easy_food_score,
+                occupied,
+                top_ratio=0.50,
             )
-            if position not in occupied:
-                return position
+        if self.difficulty == "hard":
+            return self._pick_scored_position(
+                free_positions,
+                self._hard_food_score,
+                occupied,
+                top_ratio=0.23,
+            )
+
+        roll = self.random.random()
+        if roll < 0.45:
+            return self._pick_scored_position(
+                free_positions,
+                self._easy_food_score,
+                occupied,
+                top_ratio=0.45,
+            )
+        if roll < 0.72:
+            return self.random.choice(free_positions)
+        return self._pick_scored_position(
+            free_positions,
+            self._hard_food_score,
+            occupied,
+            top_ratio=0.26,
+        )
 
     def _record_current_session(self, reason: str, force: bool = False) -> None:
         if self.session_recorded:
@@ -320,20 +620,27 @@ class SnakeGame(QWidget):
         if not force and self.score <= 0 and current_length <= 4 and duration < 1.0:
             return
 
-        record = {
+        self.best_score = max(self.best_score, self.score)
+        self.best_length = max(self.best_length, current_length)
+        self.games_played += 1
+        self.total_score += self.score
+        self.last_score = self.score
+        self.last_length = current_length
+        self.last_duration_sec = round(duration, 2)
+
+        self.last_record = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "score": self.score,
-            "best": max(self.best_score, self.score),
+            "best_score": self.best_score,
             "length": current_length,
-            "duration_sec": round(duration, 2),
+            "duration_sec": self.last_duration_sec,
             "speed_level": self.speed_level,
-            "reason": reason,
+            "difficulty": self.difficulty,
             "language": self.language,
+            "reason": reason,
         }
-        self.history.append(record)
+        self.history.append(self.last_record.copy())
         self.history = self.history[-200:]
-        self.games_played += 1
-        self.last_record = record
         self.session_recorded = True
         self._save_records()
 
@@ -369,15 +676,15 @@ class SnakeGame(QWidget):
 
     def _set_game_over(self) -> None:
         self.state = "game_over"
-        if self.score > self.best_score:
-            self.best_score = self.score
+        self.best_score = max(self.best_score, self.score)
+        self.best_length = max(self.best_length, len(self.snake))
         self._record_current_session("game_over", force=True)
         self._save_records()
 
     def _queue_direction(self, new_direction: tuple[int, int]) -> None:
         if self.state in {"ready", "game_over"}:
             self.start()
-        elif self.state == "paused":
+        elif self.state == "paused" and not self.settings_open:
             self.state = "running"
             self.last_move_time = time.monotonic()
 
@@ -417,14 +724,14 @@ class SnakeGame(QWidget):
             self.food = self._spawn_food()
             self._recalculate_interval()
             self.effect_until = time.monotonic() + 0.12
-            if self.score > self.best_score:
-                self.best_score = self.score
+            self.best_score = max(self.best_score, self.score)
+            self.best_length = max(self.best_length, len(self.snake))
             self._save_records()
         else:
             self.snake.pop()
 
     def _update_game(self) -> None:
-        if self.state != "running":
+        if self.state != "running" or self.settings_open:
             return
 
         interval_seconds = self.move_interval_ms / 1000.0
@@ -443,6 +750,8 @@ class SnakeGame(QWidget):
         self.update()
 
     def _toggle_pause_or_start(self) -> None:
+        if self.settings_open:
+            return
         if self.state == "running":
             self.state = "paused"
             self._save_records()
@@ -459,7 +768,63 @@ class SnakeGame(QWidget):
         self.reset()
         self.start()
 
+    def _open_settings(self) -> None:
+        if self.settings_open:
+            return
+        self.settings_open = True
+        self.settings_prev_state = self.state
+        if self.state == "running":
+            self.state = "paused"
+        self._save_records()
+
+    def _close_settings(self) -> None:
+        if not self.settings_open:
+            return
+        self.settings_open = False
+        if self.settings_prev_state == "running" and self.state == "paused":
+            self.state = "running"
+            self.last_move_time = time.monotonic()
+        elif self.settings_prev_state in {"ready", "paused", "game_over"}:
+            self.state = self.settings_prev_state
+        self._save_records()
+
     def keyPressEvent(self, event) -> None:
+        key = event.key()
+
+        if key == Qt.Key_O:
+            if self.settings_open:
+                self._close_settings()
+            else:
+                self._open_settings()
+            return
+
+        if self.settings_open:
+            if key in {Qt.Key_Escape, Qt.Key_Return, Qt.Key_Enter}:
+                self._close_settings()
+                return
+            if key == Qt.Key_L:
+                self._cycle_language()
+                return
+            if key == Qt.Key_D:
+                self._cycle_difficulty()
+                return
+            if key == Qt.Key_C:
+                self._cycle_snake_color()
+                return
+            if key == Qt.Key_H:
+                self._cycle_snake_shape()
+                return
+            if key == Qt.Key_F:
+                self._cycle_food_style()
+                return
+            if key in {Qt.Key_Minus, Qt.Key_BracketLeft}:
+                self._change_speed(-1)
+                return
+            if key in {Qt.Key_Equal, Qt.Key_Plus, Qt.Key_BracketRight}:
+                self._change_speed(1)
+                return
+            return
+
         directions = {
             Qt.Key_Up: (0, -1),
             Qt.Key_W: (0, -1),
@@ -470,8 +835,6 @@ class SnakeGame(QWidget):
             Qt.Key_Right: (1, 0),
             Qt.Key_D: (1, 0),
         }
-
-        key = event.key()
         if key in directions:
             self._queue_direction(directions[key])
             return
@@ -487,10 +850,6 @@ class SnakeGame(QWidget):
 
         if key == Qt.Key_R:
             self._restart_game()
-            return
-
-        if key == Qt.Key_L:
-            self._cycle_language()
             return
 
         if key in {Qt.Key_Minus, Qt.Key_BracketLeft}:
@@ -532,13 +891,52 @@ class SnakeGame(QWidget):
         if action == "action_restart":
             self._restart_game()
             return
-        if action == "action_language":
-            self._cycle_language()
+        if action == "action_settings":
+            self._open_settings()
             return
         if action == "speed_minus":
             self._change_speed(-1)
             return
         if action == "speed_plus":
+            self._change_speed(1)
+            return
+        if action == "settings_close":
+            self._close_settings()
+            return
+        if action == "settings_lang_prev":
+            self._cycle_language(-1)
+            return
+        if action == "settings_lang_next":
+            self._cycle_language(1)
+            return
+        if action == "settings_diff_prev":
+            self._cycle_difficulty(-1)
+            return
+        if action == "settings_diff_next":
+            self._cycle_difficulty(1)
+            return
+        if action == "settings_color_prev":
+            self._cycle_snake_color(-1)
+            return
+        if action == "settings_color_next":
+            self._cycle_snake_color(1)
+            return
+        if action == "settings_shape_prev":
+            self._cycle_snake_shape(-1)
+            return
+        if action == "settings_shape_next":
+            self._cycle_snake_shape(1)
+            return
+        if action == "settings_food_prev":
+            self._cycle_food_style(-1)
+            return
+        if action == "settings_food_next":
+            self._cycle_food_style(1)
+            return
+        if action == "settings_speed_minus":
+            self._change_speed(-1)
+            return
+        if action == "settings_speed_plus":
             self._change_speed(1)
             return
 
@@ -556,12 +954,19 @@ class SnakeGame(QWidget):
             return
 
         point = QPointF(event.pos())
+        if self.settings_open:
+            for action, rect in self.click_regions.items():
+                if action.startswith("settings_") and rect.contains(point):
+                    self._handle_click_action(action)
+                    return
+            return
+
         if self._board_rect().contains(point):
             self._handle_board_click(point)
             return
 
         for action, rect in self.click_regions.items():
-            if rect.contains(point):
+            if not action.startswith("settings_") and rect.contains(point):
                 self._handle_click_action(action)
                 return
 
@@ -646,12 +1051,13 @@ class SnakeGame(QWidget):
         painter.setBrush(QColor("#0D1D2B"))
         painter.drawRoundedRect(panel_rect, 14, 14)
 
-    def _draw_food(self, painter: QPainter, now: float) -> None:
+    def _food_center(self) -> QPointF:
         food_x, food_y = self.food
         px = self.board_x + food_x * self.cell_size
         py = self.board_y + food_y * self.cell_size
-        center = QPointF(px + self.cell_size / 2, py + self.cell_size / 2)
+        return QPointF(px + self.cell_size / 2, py + self.cell_size / 2)
 
+    def _draw_food_orb(self, painter: QPainter, center: QPointF, now: float) -> None:
         pulse = (math.sin(now * 7.0) + 1.0) * 0.5
         outer_radius = self.cell_size * 0.45 + pulse * 4
         gradient = QRadialGradient(center, outer_radius)
@@ -665,9 +1071,101 @@ class SnakeGame(QWidget):
         painter.setBrush(QColor("#FF6666"))
         painter.drawEllipse(center, inner_radius, inner_radius)
 
+    def _draw_food_crystal(self, painter: QPainter, center: QPointF, now: float) -> None:
+        pulse = (math.sin(now * 6.0) + 1.0) * 0.5
+        glow_radius = self.cell_size * 0.55 + pulse * 3
+        glow = QRadialGradient(center, glow_radius)
+        glow.setColorAt(0, QColor(255, 210, 210, 200))
+        glow.setColorAt(1, QColor(255, 100, 100, 0))
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(glow)
+        painter.drawEllipse(center, glow_radius, glow_radius)
+
+        half = self.cell_size * 0.34
+        polygon = QPolygonF(
+            [
+                QPointF(center.x(), center.y() - half),
+                QPointF(center.x() + half, center.y()),
+                QPointF(center.x(), center.y() + half),
+                QPointF(center.x() - half, center.y()),
+            ]
+        )
+        painter.setBrush(QColor("#FF6D6D"))
+        painter.drawPolygon(polygon)
+
+    def _draw_food_star(self, painter: QPainter, center: QPointF, now: float) -> None:
+        pulse = (math.sin(now * 8.0) + 1.0) * 0.5
+        outer = self.cell_size * (0.38 + pulse * 0.05)
+        inner = outer * 0.46
+        points = []
+        for idx in range(10):
+            angle = -math.pi / 2 + idx * math.pi / 5
+            radius = outer if idx % 2 == 0 else inner
+            points.append(
+                QPointF(
+                    center.x() + math.cos(angle) * radius,
+                    center.y() + math.sin(angle) * radius,
+                )
+            )
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor(255, 229, 124, 235))
+        painter.drawPolygon(QPolygonF(points))
+        painter.setBrush(QColor(255, 135, 92, 220))
+        painter.drawEllipse(center, self.cell_size * 0.12, self.cell_size * 0.12)
+
+    def _draw_food_ring(self, painter: QPainter, center: QPointF, now: float) -> None:
+        pulse = (math.sin(now * 9.0) + 1.0) * 0.5
+        outer = self.cell_size * (0.36 + pulse * 0.04)
+        inner = outer * 0.52
+        painter.setPen(QPen(QColor("#FFB5A1"), 2.6))
+        painter.setBrush(QColor(255, 128, 110, 35))
+        painter.drawEllipse(center, outer, outer)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor("#FF6A6A"))
+        painter.drawEllipse(center, inner, inner)
+        painter.setBrush(QColor("#0F2232"))
+        painter.drawEllipse(center, inner * 0.45, inner * 0.45)
+
+    def _draw_food(self, painter: QPainter, now: float) -> None:
+        center = self._food_center()
+        if self.food_style == "crystal":
+            self._draw_food_crystal(painter, center, now)
+            return
+        if self.food_style == "star":
+            self._draw_food_star(painter, center, now)
+            return
+        if self.food_style == "ring":
+            self._draw_food_ring(painter, center, now)
+            return
+        self._draw_food_orb(painter, center, now)
+
+    def _draw_segment_shape(self, painter: QPainter, rect: QRectF, color: QColor) -> None:
+        painter.setBrush(color)
+        if self.snake_shape_style == "square":
+            painter.drawRect(rect)
+            return
+        if self.snake_shape_style == "circle":
+            painter.drawEllipse(rect)
+            return
+        if self.snake_shape_style == "diamond":
+            center = rect.center()
+            polygon = QPolygonF(
+                [
+                    QPointF(center.x(), rect.top()),
+                    QPointF(rect.right(), center.y()),
+                    QPointF(center.x(), rect.bottom()),
+                    QPointF(rect.left(), center.y()),
+                ]
+            )
+            painter.drawPolygon(polygon)
+            return
+        painter.drawRoundedRect(rect, 6, 6)
+
     def _draw_snake(self, painter: QPainter) -> None:
-        head_color = QColor("#7CF9FF")
-        tail_color = QColor("#0E4F74")
+        head_color, tail_color = self.snake_palettes.get(
+            self.snake_color_style,
+            self.snake_palettes["neon"],
+        )
 
         painter.setPen(Qt.NoPen)
         for index, (x, y) in enumerate(self.snake):
@@ -682,8 +1180,7 @@ class SnakeGame(QWidget):
                 self.cell_size - padding * 2,
                 self.cell_size - padding * 2,
             )
-            painter.setBrush(color)
-            painter.drawRoundedRect(rect, 6, 6)
+            self._draw_segment_shape(painter, rect, color)
 
         head_x, head_y = self.snake[0]
         base_x = self.board_x + head_x * self.cell_size
@@ -711,41 +1208,41 @@ class SnakeGame(QWidget):
             self._t("game_title"),
         )
 
-        last_score = self._as_int(self.last_record.get("score", 0))
-        last_length = self._as_int(self.last_record.get("length", 0))
+        difficulty_name = self._t("difficulty_" + self.difficulty)
         stats = [
             (self._t("score"), str(self.score)),
-            (self._t("best"), str(self.best_score)),
+            (self._t("best_score"), str(self.best_score)),
             (self._t("length"), str(len(self.snake))),
-            (self._t("speed"), str(self.speed_level)),
+            (self._t("best_length"), str(self.best_length)),
+            (self._t("difficulty"), difficulty_name),
             (self._t("games"), str(self.games_played)),
-            (self._t("last"), f"{last_score}/{last_length}"),
+            (self._t("last"), f"{self.last_score}/{self.last_length}"),
         ]
 
-        title_font = QFont("Avenir Next", 12, QFont.Bold)
-        value_font = QFont("Avenir Next", 18, QFont.Bold)
-        y = self.panel_y + 76
+        title_font = QFont("Avenir Next", 11, QFont.Bold)
+        value_font = QFont("Avenir Next", 16, QFont.Bold)
+        y = self.panel_y + 72
 
         for label, value in stats:
             painter.setFont(title_font)
             painter.setPen(QColor("#9CC6D8"))
             painter.drawText(
-                QRectF(self.panel_x + 24, y, 120, 30),
+                QRectF(self.panel_x + 24, y, 126, 28),
                 Qt.AlignLeft | Qt.AlignVCenter,
                 label,
             )
             painter.setFont(value_font)
             painter.setPen(QColor("#E6FAFF"))
             painter.drawText(
-                QRectF(self.panel_x + 120, y - 2, self.panel_width - 42, 32),
+                QRectF(self.panel_x + 138, y - 1, self.panel_width - 46, 30),
                 Qt.AlignRight | Qt.AlignVCenter,
                 value,
             )
-            y += 42
+            y += 36
 
         button_x = self.panel_x + 24
         button_w = self.panel_width - 48
-        button_y = self.panel_y + 334
+        button_y = self.panel_y + 336
 
         if self.state == "running":
             primary_label = self._t("pause")
@@ -770,13 +1267,11 @@ class SnakeGame(QWidget):
             QRectF(button_x, button_y + 42, button_w, 34),
             self._t("restart"),
         )
-
-        language_name = self._t("lang_" + self.language)
         self._draw_button(
             painter,
-            "action_language",
+            "action_settings",
             QRectF(button_x, button_y + 84, button_w, 34),
-            f"{self._t('language')}: {language_name}",
+            self._t("settings"),
         )
 
         minus_rect = QRectF(button_x, button_y + 126, 44, 32)
@@ -799,7 +1294,7 @@ class SnakeGame(QWidget):
         painter.setFont(QFont("Avenir Next", 11, QFont.DemiBold))
         painter.setPen(QColor("#9CC6D8"))
         painter.drawText(
-            QRectF(button_x, button_y + 165, button_w, 22),
+            QRectF(button_x, button_y + 162, button_w, 22),
             Qt.AlignCenter,
             self._t("controls"),
         )
@@ -807,7 +1302,7 @@ class SnakeGame(QWidget):
         pad_size = 32
         pad_gap = 6
         pad_center_x = button_x + button_w / 2
-        pad_top = button_y + 190
+        pad_top = button_y + 188
         up_rect = QRectF(pad_center_x - pad_size / 2, pad_top, pad_size, pad_size)
         left_rect = QRectF(
             pad_center_x - pad_size - pad_gap,
@@ -854,7 +1349,7 @@ class SnakeGame(QWidget):
         painter.fillRect(self._board_rect(), color)
 
     def _draw_overlay(self, painter: QPainter) -> None:
-        if self.state == "running":
+        if self.state == "running" or self.settings_open:
             return
 
         if self.state == "ready":
@@ -896,6 +1391,142 @@ class SnakeGame(QWidget):
             subtitle,
         )
 
+    def _draw_setting_row(
+        self,
+        painter: QPainter,
+        y: float,
+        label: str,
+        value: str,
+        prev_key: str,
+        next_key: str,
+    ) -> None:
+        modal_w = 640
+        mx = (self.window_width - modal_w) / 2
+        row_rect = QRectF(mx + 28, y, modal_w - 56, 46)
+        painter.setPen(QPen(QColor("#3F6D8B"), 1.4))
+        painter.setBrush(QColor("#102433"))
+        painter.drawRoundedRect(row_rect, 10, 10)
+
+        painter.setFont(QFont("Avenir Next", 12, QFont.Bold))
+        painter.setPen(QColor("#9CC6D8"))
+        painter.drawText(
+            QRectF(row_rect.x() + 16, row_rect.y(), 180, row_rect.height()),
+            Qt.AlignLeft | Qt.AlignVCenter,
+            label,
+        )
+
+        prev_rect = QRectF(row_rect.right() - 200, row_rect.y() + 7, 34, 32)
+        value_rect = QRectF(row_rect.right() - 162, row_rect.y() + 7, 124, 32)
+        next_rect = QRectF(row_rect.right() - 34, row_rect.y() + 7, 34, 32)
+
+        self._draw_button(painter, prev_key, prev_rect, "<")
+        self._draw_button(painter, next_key, next_rect, ">")
+
+        painter.setPen(QPen(QColor("#3C7191"), 1.5))
+        painter.setBrush(QColor("#122E42"))
+        painter.drawRoundedRect(value_rect, 8, 8)
+        painter.setFont(QFont("Avenir Next", 10, QFont.DemiBold))
+        painter.setPen(QColor("#E8FCFF"))
+        painter.drawText(value_rect, Qt.AlignCenter, value)
+
+    def _draw_settings_overlay(self, painter: QPainter) -> None:
+        painter.fillRect(self.rect(), QColor(3, 12, 18, 168))
+
+        modal_w = 640
+        modal_h = 442
+        mx = (self.window_width - modal_w) / 2
+        my = (self.window_height - modal_h) / 2
+        modal = QRectF(mx, my, modal_w, modal_h)
+
+        painter.setPen(QPen(QColor("#4D7A98"), 2))
+        painter.setBrush(QColor("#0B1A26"))
+        painter.drawRoundedRect(modal, 16, 16)
+
+        painter.setPen(QColor("#E6FAFF"))
+        painter.setFont(QFont("Avenir Next", 24, QFont.Bold))
+        painter.drawText(
+            QRectF(mx + 24, my + 16, modal_w - 180, 42),
+            Qt.AlignLeft | Qt.AlignVCenter,
+            self._t("settings_title"),
+        )
+
+        close_rect = QRectF(mx + modal_w - 110, my + 20, 84, 32)
+        self._draw_button(painter, "settings_close", close_rect, self._t("close"))
+
+        row_y = my + 82
+        row_gap = 54
+        self._draw_setting_row(
+            painter,
+            row_y,
+            self._t("language"),
+            self._t("lang_" + self.language),
+            "settings_lang_prev",
+            "settings_lang_next",
+        )
+        self._draw_setting_row(
+            painter,
+            row_y + row_gap,
+            self._t("difficulty"),
+            self._t("difficulty_" + self.difficulty),
+            "settings_diff_prev",
+            "settings_diff_next",
+        )
+        self._draw_setting_row(
+            painter,
+            row_y + row_gap * 2,
+            self._t("snake_color"),
+            self._t("snake_color_" + self.snake_color_style),
+            "settings_color_prev",
+            "settings_color_next",
+        )
+        self._draw_setting_row(
+            painter,
+            row_y + row_gap * 3,
+            self._t("snake_shape"),
+            self._t("snake_shape_" + self.snake_shape_style),
+            "settings_shape_prev",
+            "settings_shape_next",
+        )
+        self._draw_setting_row(
+            painter,
+            row_y + row_gap * 4,
+            self._t("food_style"),
+            self._t("food_style_" + self.food_style),
+            "settings_food_prev",
+            "settings_food_next",
+        )
+
+        speed_label_rect = QRectF(mx + 28, my + modal_h - 102, 180, 44)
+        painter.setFont(QFont("Avenir Next", 12, QFont.Bold))
+        painter.setPen(QColor("#9CC6D8"))
+        painter.drawText(speed_label_rect, Qt.AlignLeft | Qt.AlignVCenter, self._t("speed"))
+
+        minus_rect = QRectF(mx + modal_w - 200, my + modal_h - 95, 34, 32)
+        value_rect = QRectF(mx + modal_w - 162, my + modal_h - 95, 124, 32)
+        plus_rect = QRectF(mx + modal_w - 34, my + modal_h - 95, 34, 32)
+
+        self._draw_button(painter, "settings_speed_minus", minus_rect, "-")
+        self._draw_button(painter, "settings_speed_plus", plus_rect, "+")
+
+        painter.setPen(QPen(QColor("#3C7191"), 1.5))
+        painter.setBrush(QColor("#122E42"))
+        painter.drawRoundedRect(value_rect, 8, 8)
+        painter.setFont(QFont("Avenir Next", 10, QFont.DemiBold))
+        painter.setPen(QColor("#E8FCFF"))
+        painter.drawText(
+            value_rect,
+            Qt.AlignCenter,
+            f"{self._t('speed_level')} {self.speed_level}",
+        )
+
+        painter.setFont(QFont("Avenir Next", 10))
+        painter.setPen(QColor("#88B6CB"))
+        painter.drawText(
+            QRectF(mx + 28, my + modal_h - 44, modal_w - 56, 20),
+            Qt.AlignCenter,
+            self._t("settings_hint"),
+        )
+
     def paintEvent(self, event) -> None:
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing, True)
@@ -911,6 +1542,8 @@ class SnakeGame(QWidget):
         self._draw_hud(painter)
         self._draw_effect(painter, now)
         self._draw_overlay(painter)
+        if self.settings_open:
+            self._draw_settings_overlay(painter)
 
 
 def main() -> None:
